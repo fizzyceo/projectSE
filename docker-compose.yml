@@ -1,0 +1,61 @@
+version: "3"
+services:
+  app:
+    container_name: wildfire-test
+    image: khalidghanamy/wildfire:test-10
+    restart: always
+    ports:
+      - "4053:4053"
+    links:
+      - mongo
+      - redis
+      - mqtt
+    depends_on:
+      - mongo
+      - redis
+      - mqtt
+    volumes:
+      - /home/wildFire/wildfire-images-test:/usr/src/app/public
+    environment:
+      WAIT_HOSTS: mongo:27017
+    networks:
+      - wildfire-test-network
+
+  mongo:
+    container_name: mongo-test
+    image: mongo
+    restart: always
+    volumes:
+      - /home/wildFire/db/mongo-wildfire-production:/data/db
+    ports:
+      - "27017:27017"
+    networks:
+      - wildfire-test-network
+
+  redis:
+    container_name: redis-test
+    image: redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes: 
+      - /home/wildFire/cache:/data
+    networks:
+      - wildfire-test-network
+
+  mqtt:
+    container_name: mqtt-test
+    image: emqx
+    restart: always
+    ports:
+      - "1883:1883"
+      - "8083:8083"
+      - "8084:8084"
+      - "8883:8883"
+      - "18083:18083"
+    networks:
+      - wildfire-test-network
+
+networks:
+  wildfire-test-network:
+    driver: bridge
