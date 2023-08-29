@@ -101,6 +101,25 @@ const getOneHistoricalWind = async (id) => {
         throw new ApiError.InternalServerError('Error fetching Historical Temperature and Humidity Data');
     }
 };
+const getLatestWind = async (devid) => {
+    try {
+
+        console.log("devvvvIDDDDD ", devid);
+
+        const historicalData = await db.HistoricalWind.getLatest(devid)
+
+        return {
+            result: true,
+            message: 'Latest Historical Wind Data fetched successfully',
+            data: historicalData,
+            
+        };
+    } catch (e) {
+        logger.error(JSON.stringify(e));
+        throw new ApiError.InternalServerError('Error fetching Latest Historical Wind Data');
+    }
+};
+
 
 // Get the count of Historical Temperature and Humidity Data
 
@@ -110,6 +129,7 @@ module.exports = {
     updateHistoricalWind,
     DeleteHistoricalWind,
     getHistoricalWind,
+    getLatestWind,
     getOneHistoricalWind,
     
 };

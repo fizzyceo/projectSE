@@ -19,9 +19,14 @@ const getHistoricalWind = tryCatchWrapper(async (req, res, next) => {
     const result = await HistWindService.getHistoricalWind(req.body);
     return res.status(200).json(formatSuccessResponse(result,req));
 })
+const getLatestWind= tryCatchWrapper(async (req, res, next) => { 
+    const result = await HistWindService.getLatestWind(req.params.devid);
+    return res.status(200).json(formatSuccessResponse(result,req));
+})
+
 
 const getOneHistoricalWind= tryCatchWrapper(async (req, res, next) => { 
-    const result = await HistWindService.getOneHistoricalWind( req.params.id);
+    const result = await HistWindService.getOneHistoricalWind( req.params.devid);
     return res.status(200).json(formatSuccessResponse(result,req));
 })
 
@@ -39,6 +44,7 @@ module.exports = {
     createHistoricalWind,
     getHistoricalWind,
     getOneHistoricalWind,
+    getLatestWind,
     DeleteHistoricalWind,
     updateHistoricalWind,   
 }

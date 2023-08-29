@@ -7,53 +7,7 @@ const AvgWind = require("./avg_wind");
 
 const device = require("./devices");
 const { default: axios } = require("axios");
-async function calculate_avg(detectionTime) {
-  try {
-    // Find all historical wind data for the given detectionTime
-    const windData = await this.find({ detectionTime });
 
-    if (windData.length === 0) {
-      return {
-        averageSpeed: 0,
-        dominantDirection: null,
-      };
-    }
-
-    // Calculate the average speed
-    const totalSpeed = windData.reduce((sum, data) => sum + data.speed, 0);
-    const averageSpeed = totalSpeed / windData.length;
-
-    // Count occurrences of "left" and "right" directions
-    const directionCounts = {
-      left: 0,
-      right: 0,
-    };
-
-    windData.forEach((data) => {
-      if (data.direction === "left") {
-        directionCounts.left += 1;
-      } else if (data.direction === "right") {
-        directionCounts.right += 1;
-      }
-    });
-
-    // Determine the dominant direction
-    let dominantDirection = null;
-    if (directionCounts.left > directionCounts.right) {
-      dominantDirection = "left";
-    } else if (directionCounts.right >= directionCounts.left) {
-      dominantDirection = "right";
-    }
-
-    return {
-      averageSpeed,
-      dominantDirection,
-    };
-  } catch (error) {
-    console.error(error);
-    throw error;
-  }
-}
 const historicalWindSchema = new mongoose.Schema(
   {
     code: { type: String, required: true, unique: true },
@@ -227,6 +181,28 @@ historicalWindSchema.statics.getOne = async function (id) {
     throw error;
   }
 };
+historicalWindSchema.statics.getLatest = async function (devId) {
+  try {
+    // Find the latest historical temperature entry
+    const latestWindEntry = await this.findOne({deviceId:devId})
+      .sort({ detectionTime: -1 }) // Sort by detectionTime in descending order to get the latest entry
+      .populate({
+        path: "deviceId",
+        model: "Device",
+        select: "devId label type status location", // Include only state and coordinates fields from the Device model
+      });
+
+    if (!latestWindEntry) {
+      return null
+    }
+
+    return latestWindEntry;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
 historicalWindSchema.statics.getCount = async function () {
   try {
     const query = {

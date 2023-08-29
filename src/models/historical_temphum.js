@@ -169,6 +169,30 @@ historicaltempSchema.statics.getOne = async function (id) {
     throw error;
   }
 };
+
+historicaltempSchema.statics.getLatest = async function (devId) {
+  try {
+    // Find the latest historical temperature entry
+    const latestTemperatureEntry = await this.findOne({deviceId:devId})
+      .sort({ detectionTime: -1 }) // Sort by detectionTime in descending order to get the latest entry
+      .populate({
+        path: "deviceId",
+        model: "Device",
+        select: "devId label type status location", // Include only state and coordinates fields from the Device model
+      });
+
+    if (!latestTemperatureEntry) {
+      return null;
+    }
+
+    return latestTemperatureEntry;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+
 historicaltempSchema.statics.getCount = async function () {
   try {
     const query = {
