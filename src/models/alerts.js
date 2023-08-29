@@ -148,7 +148,25 @@ alertSchema.statics.get = async function (body) {
 };
 
 alertSchema.index({ location: '2dsphere' });
-
+alertSchema.statics.getAlertsByDates = async function (body){
+    try {
+      
+        const limit = 10;
+    
+        const Data = await this.find({
+          detectionTime:{
+            $gte: body.selectedDates[0],
+            $lte: body.selectedDates[1]
+          }
+        } )
+          .limit(limit);
+    
+        return Data;
+      } catch (error) {
+        console.error(error);
+        throw error;
+      }
+}
 // create alert
 alertSchema.statics.createAlert = async function (body) {
     if (body.location) {

@@ -12,8 +12,9 @@ mongoose.Query.prototype.cache = function (hashKey) {
 
 if (client && !process.env.VERCEL) {
     mongoose.Query.prototype.exec = async function () {
-
+        console.log("in the cache");
         if (!this.useCache) {
+            console.log("in the usecache");
             return await exec.apply(this, arguments)
         }
         const key = JSON.stringify(
@@ -21,8 +22,11 @@ if (client && !process.env.VERCEL) {
         );
 
         // See if we have a value for 'key' in redis
+
         const cachedValue = await client.HGET(this.hashKey, key)
+        console.log(cachedValue);
         if (cachedValue  ) {
+        
             console.log('getting data from cash');
             const doc = JSON.parse(cachedValue) || {}
             return Array.isArray(doc) ?

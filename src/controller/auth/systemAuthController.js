@@ -4,7 +4,7 @@ const tryCatchWrapper = require("../../helpers/tryCatchWrapper");
 const _ = require('lodash');
 const { formatSuccessResponse } = require('../../helpers/formatResponse')
 
-const login = tryCatchWrapper(async (req, res, next) => {
+const login = (async (req, res, next) => {
   const { email, password } = req.body;
   const result = await systemAuthService.login({ email, password });
   result.accessToken = generateAccessToken(_.pick(result.data, ['id', 'email', 'name', 'roles', 'code','clientId']));

@@ -90,7 +90,18 @@ const getAlerts = async (body) => {
         count
     }
 }
-
+const getAlertsByDates = async(body)=>{
+    const betweendates = await db.Alert.getAlertsByDates(body);
+    
+    if (!betweendates) {
+        throw new Error('no data between those dates');
+    }
+    return {
+        result: true,
+        message: 'Avg Temperature and Humidity Data updated successfully',
+        data: betweendates,
+    };
+}
 // get one
 const getAlert = async (alertId) => {
     const alert = await db.Alert.getOne(alertId)
@@ -105,6 +116,7 @@ module.exports = {
     updateAlert,
     deleteAlert,
     getAlerts,
+    getAlertsByDates,
     getAlert,
     createMany
 

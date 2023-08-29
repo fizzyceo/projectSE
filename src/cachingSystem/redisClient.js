@@ -5,10 +5,18 @@ require('dotenv').config()
 class RedisClient {
     getClient() {
         if (!RedisClient.instance) {
+            console.log("creating redis instance ");
+            
             let client = redis.createClient({
                 legacyMode:true,
-                url:`redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`
+                password:"88QYdvYecTRnSBZ2CdU0V7KfkW2V0yvE",
+                socket:{
+                    host:process.env.REDIS_HOST,
+                    port:process.env.REDIS_PORT
+                }    
+                // url:`redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`
             });
+            console.log("creating redis instance success");
             client.connect().then(() => {
                 console.log('Connected to Redis');
             }).catch((e) => {

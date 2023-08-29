@@ -11,7 +11,7 @@ const router = express.Router();
 
 // authorizeRoles('client')
 router.post('/create', validate(Dtos.createDeviceDto), verifyToken, clearCache('device'), deviceController.createDevice)
-router.post('/get', validate(Dtos.getDevicesDto), verifyToken, deviceController.getDevices)
+router.post('/get', validate(Dtos.getDevicesDto), deviceController.getDevices)
 router.get('/get/:id', validate(Dtos.getDeviceDto), verifyToken, deviceController.getDevice)
 router.put('/update/:id', validate(Dtos.updateDeviceDto), verifyToken, clearCache('device'), deviceController.updateDevice)
 router.delete('/delete/:id', validate(Dtos.deleteDeviceDto), verifyToken, clearCache('device'), deviceController.deleteDevice)

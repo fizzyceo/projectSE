@@ -74,7 +74,7 @@ const userSchema = new mongoose.Schema(
     },
     { timestamps: true },
 );
-
+//REVIEW AND UNDERSTAND
 userSchema.statics.get = async function (body) {
     const page = (body.page || 1) - 1;
     const limit = body.limit || 10;
