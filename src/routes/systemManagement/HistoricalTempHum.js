@@ -13,6 +13,6 @@ router.get("/get", HistoricalTempHumController.getHistoricalTemphum);
 router.get("/latest/:devid", HistoricalTempHumController.getLatestTempHum);
 router.get("/get/:id", HistoricalTempHumController.getOneHistoricalTemphum);
 router.put("/update/:id", verifyToken, HistoricalTempHumController.updateHistoricalTemphum);
-router.delete("/delete/:id", verifyToken, HistoricalTempHumController.DeleteHistoricalTemphum);
+router.delete("/delete/:id", HistoricalTempHumController.DeleteHistoricalTemphum);
 
 module.exports = router;

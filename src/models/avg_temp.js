@@ -25,6 +25,10 @@ const AvgTempSchema = new mongoose.Schema(
             required: true,
 
        },
+       count:{
+        type:Number,
+        
+       },
         source: {
             type: String,
             enum: ['user', 'device'],

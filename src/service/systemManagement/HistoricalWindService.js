@@ -3,23 +3,23 @@ const moment = require('moment');
 const { logger } = require('../../Logger');
 const ApiError = require('../../error/api-error');
 
-// Create Historical Temperature and Humidity Data
+// Create Historical Wind Data
 const createHistWind = async (body) => {
     console.log(body);
     try {
         const historicalData = await db.HistoricalWind.createHistoricalWind(body);
         return {
             result: true,
-            message: 'Historical Temperature and Humidity Data created successfully',
+            message: 'Historical Wind Data created successfully',
             data: historicalData,
         };
     } catch (e) {
         logger.error(JSON.stringify(e));
-        throw new Error('Error creating Historical Temperature and Humidity Data');
+        throw new Error('Error creating Historical Wind Data');
     }
 };
 
-// Update Historical Temperature and Humidity Data
+// Update Historical Wind Data
 const updateHistoricalWind = async (id, body) => {
     try {
         body.id = id
@@ -27,40 +27,43 @@ const updateHistoricalWind = async (id, body) => {
         const updatedData = await db.HistoricalWind.updateHistoricalWind(body);
 
         if (!updatedData) {
-            throw new ApiError.NotFound('Historical Temperature and Humidity Data not found');
+            throw new ApiError.NotFound('Historical Wind Data not found');
         }
 
         return {
             result: true,
-            message: 'Historical Temperature and Humidity Data updated successfully',
+            message: 'Historical Wind Data updated successfully',
             data: updatedData,
         };
     } catch (e) {
         logger.error(JSON.stringify(e));
-        throw new ApiError.InternalServerError('Error updating Historical Temperature and Humidity Data');
+        throw new ApiError.InternalServerError('Error updating Historical Wind Data');
     }
 };
 
-// Soft Delete Historical Temperature and Humidity Data
+// Soft Delete Historical Wind Data
 const DeleteHistoricalWind = async (id) => {
     try {
-        const deletedData = await db.HistoricalWind.softDeleteHistoricalWind(id);
 
+        console.log("id***************",id);
+        const deletedData = await db.HistoricalWind.softDelete(id);
+        console.log(deletedData);
         if (!deletedData) {
-            throw new ApiError.NotFound('Historical Temperature and Humidity Data not found');
+            throw new ApiError.NotFound('Historical Wind Data not found');
         }
 
         return {
             result: true,
-            message: 'Historical Temperature and Humidity Data soft deleted successfully',
+            message: 'Historical Wind Data soft deleted successfully',
         };
     } catch (e) {
+        console.log("ERRORRRRR," ,e);
         logger.error(JSON.stringify(e));
-        throw new ApiError.InternalServerError('Error deleting Historical Temperature and Humidity Data');
+        throw new ApiError.InternalServerError('Error deleting Historical Wind Data');
     }
 };
 
-// Get All Historical Temperature and Humidity Data
+// Get All Historical Wind Data
 const getHistoricalWind = async () => {
     try {
 
@@ -72,39 +75,37 @@ const getHistoricalWind = async () => {
 
         return {
             result: true,
-            message: 'Historical Temperature and Humidity Data fetched successfully',
+            message: 'Historical Wind Data fetched successfully',
             data: historicalData,
             count,
         };
     } catch (e) {
         logger.error(JSON.stringify(e));
-        throw new ApiError.InternalServerError('Error fetching Historical Temperature and Humidity Data');
+        throw new ApiError.InternalServerError('Error fetching Historical Wind Data');
     }
 };
 
-// Get One Historical Temperature and Humidity Data
+// Get One Historical Wind Data
 const getOneHistoricalWind = async (id) => {
     try {
         const data = await db.HistoricalWind.findById(id);
 
         if (!data) {
-            throw new ApiError.NotFound('Historical Temperature and Humidity Data not found');
+            throw new ApiError.NotFound('Historical Wind Data not found');
         }
 
         return {
             result: true,
-            message: 'Historical Temperature and Humidity Data fetched successfully',
+            message: 'Historical Wind Data fetched successfully',
             data,
         };
     } catch (e) {
         logger.error(JSON.stringify(e));
-        throw new ApiError.InternalServerError('Error fetching Historical Temperature and Humidity Data');
+        throw new ApiError.InternalServerError('Error fetching Historical Wind Data');
     }
 };
 const getLatestWind = async (devid) => {
     try {
-
-        console.log("devvvvIDDDDD ", devid);
 
         const historicalData = await db.HistoricalWind.getLatest(devid)
 
@@ -121,7 +122,7 @@ const getLatestWind = async (devid) => {
 };
 
 
-// Get the count of Historical Temperature and Humidity Data
+// Get the count of Historical Wind Data
 
 
 module.exports = {

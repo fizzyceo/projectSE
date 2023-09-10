@@ -1,0 +1,93 @@
+["PACKET FROM TEMPERATURE SENDOR (FOR AIR DATA)"]
+
+[
+	{
+		"ts": 1686832448473,
+		"siteId": "SITE0001", 
+		"deviceId": "DEV0022",
+		"type":"temp",
+			
+		"status": 1,
+		"statusDetails": "Device is just fine",
+		"battery":12.8, 
+		"signal":25,
+		"version":1.0,
+		
+		"temp": { 
+			"temperature": 32.0,
+			"humity": "SE"	 
+		}
+	}
+]
+
+["PACKET FROM WIND SENSOR (FOR WIND DATA)"]
+
+[
+	{
+		"ts": 1686832448473,
+		"siteId": "SITE0001",
+		"deviceId": "DEV0022",
+		"type":"wind",
+		
+		"status": 1,
+		"statusDetails": "Device is just fine",
+		"battery":12.8,
+		"signal":25,
+		"version":1.0,
+		
+		"wind": { //if type == wind then we search for this element
+			"speed": 45.54,
+			"direction": 356			
+		}
+	}
+]
+
+["PACKET FROM WIND & TEMPERATURE SENSOR (FOR BOTH WIND & TEMPERATURE DATA)"]
+
+[
+	{
+		"ts": 1686832448473,
+		"siteId": "SITE0001",
+		"deviceId": "DEV0022",
+		"type":"windTemp", //this is a new type that needs to be added to the device tables later
+		
+		"status": 1,
+		"statusDetails": "Device is just fine",
+		"battery":12.8,
+		"signal":25,
+		"version":1.0,
+		
+		"wind": {
+			"speed": 4.56,
+			"direction": "N"		//	store as letters
+		},
+		"temp": {
+			"temperature": 32.0,
+			"humity": 56	
+		}
+	}
+]
+
+// needs to learn what this packet is used for ?
+//distance from where to where ? 
+["PACKET FROM RANG FINDER SENDOR"]
+
+[
+	{
+		"ts": 1686832448473,
+		"siteId": "SITE0001",
+		"deviceId": "DEV0022",
+		"type":"range",
+		"version":1.0,
+		
+		"status": 1,
+		"statusDetails": "Device is just fine",
+		"battery":12.8,
+		"signal":25,
+		"version":1.0,
+		
+		"range": {
+			"distance": 32.0,
+		}
+	}
+]

@@ -5,15 +5,16 @@ const isMongooseId = require('../../helpers/isMongooseId')
 const createDeviceDto = {
   body: Joi.object({
     label: Joi.string().required(),
-    type: Joi.string().required(),
+    type: Joi.string().required().valid("camera","temperature","wind","windTemp"),
     version: Joi.string().required(),
     wilaya: Joi.string().required(),
     region: Joi.string().required(),
-    // statusDetails: Joi.string().required(),
+    statusDetails: Joi.string().required(),
     devId: Joi.string().required(),
     location: Joi.array().optional().items(Joi.number()).length(2),
-    // status: Joi.string().optional().valid('online', 'offline'),
+     status: Joi.string().optional().valid('online', 'offline'),
     lastOnline: Joi.date().required(),
+    siteId: Joi.string().required()
 
   })
 }
@@ -41,6 +42,7 @@ const getDevicesDto = {
     location: Joi.array().optional().items(Joi.number()).length(2),
     version:Joi.string().optional(),
     devId:Joi.string().optional(),
+    siteId:Joi.string().optional(),
 
   }),
 }

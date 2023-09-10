@@ -6,6 +6,7 @@ const HistoricalTemphum = require('./historical_temphum')
 const HistoricalWind= require('./historical_wind')
 const AvgWind = require('./avg_wind')
 const AvgTemp = require('./avg_temp')
+const Site = require('./Site')
 const db = {
     User,
     Alert,
@@ -13,7 +14,8 @@ const db = {
     HistoricalTemphum,
     HistoricalWind,
     AvgWind,
-    AvgTemp
+    AvgTemp,
+    Site
 }
 module.exports = {
     db,

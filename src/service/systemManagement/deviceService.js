@@ -5,10 +5,10 @@ const { db } = require('../../models');
 const { logger } = require('../../Logger')
 const moment = require('moment')
 // create device 
-const createDevice = async (userId, body) => {
+const createDevice = async ( body) => {
     try {
-        body.createdBy = userId
-        body.updatedBy = userId
+        // body.createdBy = userId
+        // body.updatedBy = userId
         const device = await db.Device.createDevice(body)
         return {
             result: true,
@@ -23,7 +23,10 @@ const createDevice = async (userId, body) => {
 // update device
 const updateDevice = async (userId, deviceId, body) => {
     body.id = deviceId
-    body.updatedBy = userId
+    if(userId){
+        body.updatedBy = userId
+    }
+    
     const newDevice = await db.Device.updateDevice(body)
     return {
         result: true,

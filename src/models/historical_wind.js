@@ -7,6 +7,7 @@ const AvgWind = require("./avg_wind");
 
 const device = require("./devices");
 const { default: axios } = require("axios");
+const frequent = require("../helpers/frequent");
 
 const historicalWindSchema = new mongoose.Schema(
   {
@@ -22,7 +23,7 @@ const historicalWindSchema = new mongoose.Schema(
     },
     direction: {
       type: String,
-      enum: ["left", "right"],
+      enum: ["N", "SE", "E", "W", "NE", "NW", "S", "SW"],
       required: true,
     },
     speed: {
@@ -63,14 +64,31 @@ historicalWindSchema.statics.createHistoricalWind = async function (body) {
   //calculates the average wind (by fetching all the data from this table filtered by the the date and and store the avg in the avg_Table
   try {
     //*********************CHECK DEVICE AUTHENTICITY********************************************
+
     if (body.deviceId) {
       const deviceExists = await device.getOne(body.deviceId);
       if (deviceExists) {
+        body.detectionTime = moment(new Date(body.detectionTime)).format(
+          "YYYY-MM-DD HH:mm"
+        );
         const historicalData = new this(body);
         await historicalData.save();
-
-        //*********************AVG CALCULATIONS********************************************
-        const windData = await this.find({ detectionTime: body.detectionTime });
+        body.detectionTime = moment(new Date(body.detectionTime)).format(
+          "YYYY-MM-DD"
+        );
+        const startDate = moment(body.detectionTime)
+          .startOf("day")
+          .format("YYYY-MM-DD HH:mm");
+        const endDate = moment(body.detectionTime)
+          .endOf("day")
+          .format("YYYY-MM-DD HH:mm");
+        // Query for historical data within the date range
+        const windData = await this.find({
+          detectionTime: {
+            $gte: startDate,
+            $lte: endDate,
+          },
+        });
 
         const Avgexists = await AvgWind.findOne({
           detectionTime: body.detectionTime,
@@ -83,30 +101,12 @@ historicalWindSchema.statics.createHistoricalWind = async function (body) {
           );
           const averageSpeed = totalSpeed / windData.length;
 
-          // Count occurrences of "left" and "right" directions
-          const directionCounts = {
-            left: 0,
-            right: 0,
-          };
+          const directions = windData.map((data) => data.direction);
+          const mostCommonDirection = frequent(directions);
 
-          windData.forEach((data) => {
-            if (data.direction === "left") {
-              directionCounts.left += 1;
-            } else if (data.direction === "right") {
-              directionCounts.right += 1;
-            }
-          });
-          // Determine the dominant direction
-          let dominantDirection = null;
-          if (directionCounts.left > directionCounts.right) {
-            dominantDirection = "left";
-          } else if (directionCounts.right >= directionCounts.left) {
-            dominantDirection = "right";
-          }
-          //update the avg table by detectiondate
           const body2 = {
             detectionTime: body.detectionTime,
-            direction: dominantDirection,
+            direction: mostCommonDirection,
             speed: averageSpeed,
           };
 
@@ -120,9 +120,8 @@ historicalWindSchema.statics.createHistoricalWind = async function (body) {
       } else {
         throw new Error("device not found");
       }
-    }else{
+    } else {
       throw new Error("theres no device Id");
-
     }
   } catch (error) {
     console.error(error);
@@ -130,6 +129,7 @@ historicalWindSchema.statics.createHistoricalWind = async function (body) {
   }
 };
 historicalWindSchema.statics.updateHistoricalWind = async function (body) {
+  //recalculate all the information on the avg table
   try {
     const { id, ...updateFields } = body;
     const updatedData = await this.findByIdAndUpdate(
@@ -150,17 +150,37 @@ historicalWindSchema.statics.updateHistoricalWind = async function (body) {
 };
 
 historicalWindSchema.statics.softDelete = async function (id) {
+  //recalculate all the information on the avg table
   try {
+    
+    //change the wind average 
+    
     const deletedData = await this.findByIdAndUpdate(
-      id,
-      { $set: { isDeleted: true } },
-      { new: true }
+      {
+        _id: id,
+      },
+      {
+        $set: {
+          isDeleted: true,
+        },
+      },
+      {
+        new: true,
+      }
     );
+
     if (!deletedData) {
       throw new ApiError.notFound(
         "Historical Temperature and Humidity Data not found"
       );
     }
+    // const body2 = {
+    //   detectionTime: deletedData?.detectionTime,
+    //   direction: deletedData?.direction,
+    //   speed: deletedData?.speed,
+    // };
+
+    // const updatedavg = await AvgWind.updateAvgWindByDate(body2);
     return deletedData;
   } catch (error) {
     console.error(error);
@@ -184,7 +204,7 @@ historicalWindSchema.statics.getOne = async function (id) {
 historicalWindSchema.statics.getLatest = async function (devId) {
   try {
     // Find the latest historical temperature entry
-    const latestWindEntry = await this.findOne({deviceId:devId})
+    const latestWindEntry = await this.findOne({ deviceId: devId })
       .sort({ detectionTime: -1 }) // Sort by detectionTime in descending order to get the latest entry
       .populate({
         path: "deviceId",
@@ -193,7 +213,7 @@ historicalWindSchema.statics.getLatest = async function (devId) {
       });
 
     if (!latestWindEntry) {
-      return null
+      return null;
     }
 
     return latestWindEntry;

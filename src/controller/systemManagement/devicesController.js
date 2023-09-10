@@ -6,7 +6,7 @@ const { formatSuccessResponse } = require('../../helpers/formatResponse')
 
 const createDevice = tryCatchWrapper(async (req, res, next) => {
     const data = req.body;
-    const result = await deviceService.createDevice(req.user.id, data);
+    const result = await deviceService.createDevice( data);
     return res.status(201).json(formatSuccessResponse(result,req));
 });
 

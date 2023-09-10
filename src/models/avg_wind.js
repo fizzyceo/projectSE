@@ -7,10 +7,6 @@ const ApiError = require("../error/api-error");
 const AvgWindSchema = new mongoose.Schema(
   {
     code: { type: String, required: true, unique: true },
-    // site:{
-    //     type: mongoose.Schema.Types.ObjectId,
-    //     ref:'Site'
-    // },
 
     detectionTime: {
       type: String,
@@ -19,7 +15,7 @@ const AvgWindSchema = new mongoose.Schema(
     },
     direction: {
       type: String,
-      enum: ["left", "right"],
+      enum: ["N", "SE", "E", "W", "NE", "NW", "S", "SW"],
       required: true,
     },
     speed: {

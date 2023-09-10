@@ -13,6 +13,6 @@ router.get("/get", HistWindController.getHistoricalWind);
 router.get("/latest/:devid",HistWindController.getLatestWind)
 router.get("/get/:id", HistWindController.getOneHistoricalWind);
 router.put("/update/:id", verifyToken, HistWindController.updateHistoricalWind);
-router.delete("/delete/:id", verifyToken, HistWindController.DeleteHistoricalWind);
+router.delete("/delete/:id", HistWindController.DeleteHistoricalWind);
 
 module.exports = router;

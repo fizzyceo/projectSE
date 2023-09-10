@@ -19,8 +19,17 @@ const deviceSchema = new mongoose.Schema(
         },
         type: {
             type: String,
+            enum:['camera','wind','temperature',"windTemp"],
             required: true
 
+
+        },
+        battery:{   
+              type: Number,
+
+        },
+        signal:{
+            type:Number
         },
         location: {
             type: pointSchema,
@@ -49,6 +58,10 @@ const deviceSchema = new mongoose.Schema(
             type: Boolean,
             default: false
         },
+        siteId:{
+            type: mongoose.Schema.Types.ObjectId,
+            ref:'Site'
+        },
         createdBy: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'User',
@@ -74,11 +87,14 @@ deviceSchema.statics.get = async function (body) {
         status: 1,
         location: 1,
         version: 1,
+        battery: 1,
+        signal: 1,
         wilaya: 1,
         region: 1,
         statusDetails:1,
         type: 1,
         devId:1,
+        siteId:1,
         isDeleted: 1,
         createdAt: 1,
         updatedAt: 1,
@@ -86,6 +102,7 @@ deviceSchema.statics.get = async function (body) {
     const devices = await this.find({
         isDeleted: { $ne: true },
         ...(body.wilaya && { wilaya: body.wilaya }),
+        ...(body.siteId && { siteId: body.siteId }),
         ...(body.region && { region: body.region }),
         ...(body.type && { type: body.type }),
         ...(body.label && { label: body.label }),
@@ -93,6 +110,8 @@ deviceSchema.statics.get = async function (body) {
         ...(body.devId && { devId: body.devId }),
         ...(body.code && { code: body.code }),
         ...(body.version && { version: body.version }),
+        ...(body.battery && { battery: body.battery }),
+        ...(body.signal && { signal: body.signal }),
         ...(body.search && {
             $or: [
                 { code: { $regex: body.search, $options: 'i' } },

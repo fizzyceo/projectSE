@@ -11,6 +11,6 @@ const myServer = () => {
 };
 console.log(process.env.MONGO_URL);
 connectDb(process.env.MONGO_URL, myServer);
-// require('./src/mqtt')
+require('./src/mqtt')
 
 
