@@ -42,7 +42,135 @@ const historicaltempSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+historicaltempSchema.statics.getPerPeriod = async function (body) {
+  try {
+    const specificDate = body.date;
+    const interval = body.interval; // period between each data
+    //body.date
 
+    console.log(specificDate, interval);
+    //body.period
+    // Calculate the start and end timestamps for the specific date
+    const startDate = moment(specificDate)
+      .startOf("day")
+      .format("YYYY-MM-DD HH:mm");
+    const endDate = moment(specificDate)
+      .endOf("day")
+      .format("YYYY-MM-DD HH:mm");
+    // Query for historical data within the date range
+    console.log(startDate);
+
+    const historicalData = await this.find({
+      detectionTime: {
+        $gte: startDate,
+        $lte: endDate,
+      },
+    }).sort({ detectionTime: "asc" });
+
+    // Initialize variables to calculate the average
+    let currentInterval = null;
+    let totalTemperature = 0;
+    let totalHumidity = 0;
+    let count = 0;
+
+    // Store the averaged data
+    const averagedData = [];
+    for (let i = 0; i < historicalData.length; i++) {
+      const data = historicalData[i];
+      const detectionTime = moment(data.detectionTime);
+
+      if (!currentInterval) {
+        // Start a new interval
+        currentInterval = {
+          start: detectionTime.format("YYYY-MM-DD HH:mm"), // Start time
+          end: null, // End time (to be calculated)
+          exactdate: specificDate,
+          data: [],
+        };
+      }
+
+      // Check if the current interval has reached the desired duration
+      if (
+        detectionTime.diff(moment(currentInterval.start), "minutes") >= interval
+      ) {
+        // Calculate the end time for the interval
+        currentInterval.end = detectionTime.format("YYYY-MM-DD HH:mm");
+        console.log(detectionTime);
+        // Calculate the average for the current interval
+        currentInterval.temperature = parseFloat(
+          totalTemperature / count
+        ).toFixed(0);
+        currentInterval.humidity = parseFloat(totalHumidity / count).toFixed(0);
+
+        // Push the current interval to the result
+        averagedData.push(currentInterval);
+
+        // Reset counters and start a new interval
+        totalTemperature = 0;
+        totalHumidity = 0;
+        count = 0;
+        currentInterval = null;
+
+        // Continue processing the current data point
+        if (i != historicalData.length - 1) {
+          i--;
+        }
+      } else {
+        // Add data to the current interval
+        currentInterval.data.push(data);
+
+        // Accumulate temperature and humidity values for averaging
+        totalTemperature += data.temperature;
+        totalHumidity += data.humidity;
+        count++;
+      }
+    }
+
+    // historicalData.forEach((data) => {
+    //   const detectionTime = moment(data.detectionTime);
+    //   if (!currentInterval) {
+    //     // Start a new interval
+    //     currentInterval = {
+    //       start: detectionTime.format('YYYY-MM-DD HH:mm'), // Start time
+    //       end: null, // End time (to be calculated)
+    //       exactdate: specificDate,
+    //       data: [],
+    //     };
+    //   }
+
+    //   // Add data to the current interval
+    //   currentInterval.data.push(data);
+
+    //   // Accumulate temperature and humidity values for averaging
+    //   totalTemperature += data.temperature;
+    //   totalHumidity += data.humidity;
+    //   count++;
+
+    //   // Check if the current interval has reached the desired duration
+    //   console.log(detectionTime,detectionTime.diff(moment(currentInterval.start), 'minutes'));
+
+    //   if (detectionTime.diff(moment(currentInterval.start), 'minutes') >= interval) {
+    //     // Calculate the end time for the interval
+    //     currentInterval.end = detectionTime.format('YYYY-MM-DD HH:mm');
+    //     // Calculate the average for the current interval
+    //     currentInterval.temperature = parseFloat(totalTemperature / count).toFixed(0) ;
+    //     currentInterval.humidity =parseFloat( totalHumidity/ count).toFixed(0)  / count;
+    //     averagedData.push(currentInterval);
+
+    //     // Reset counters and start a new interval
+    //     totalTemperature = 0;
+    //     totalHumidity = 0;
+    //     count = 0;
+    //     currentInterval = null;
+    //   }
+    // });
+
+    return averagedData;
+    //
+  } catch (err) {
+    throw new Error(err);
+  }
+};
 historicaltempSchema.statics.getHistoricalTemphum = async function () {
   try {
     const limit = 10;
@@ -70,8 +198,12 @@ historicaltempSchema.statics.createHistoricalTemphum = async function (body) {
         body.detectionTime = moment(new Date(body.detectionTime)).format(
           "YYYY-MM-DD"
         );
-        const startDate = moment(body.detectionTime).startOf("day").format("YYYY-MM-DD HH:mm");
-        const endDate = moment(body.detectionTime).endOf("day").format("YYYY-MM-DD HH:mm");
+        const startDate = moment(body.detectionTime)
+          .startOf("day")
+          .format("YYYY-MM-DD HH:mm");
+        const endDate = moment(body.detectionTime)
+          .endOf("day")
+          .format("YYYY-MM-DD HH:mm");
         // Query for historical data within the date range
         const TempData = await this.find({
           detectionTime: {
@@ -79,7 +211,6 @@ historicaltempSchema.statics.createHistoricalTemphum = async function (body) {
             $lte: endDate,
           },
         });
-
 
         const Avgexists = await AvgTemp.findOne({
           detectionTime: body.detectionTime,
@@ -91,7 +222,9 @@ historicaltempSchema.statics.createHistoricalTemphum = async function (body) {
             0
           );
           console.log(totaltemperature, TempData.length);
-          const averagetemperature = totaltemperature / TempData.length;
+          const averagetemperature = parseFloat(
+            totaltemperature / TempData.length
+          ).toFixed(0);
           // Calculate the average humidity
 
           const totalHumidity = TempData.reduce(
@@ -99,7 +232,9 @@ historicaltempSchema.statics.createHistoricalTemphum = async function (body) {
             0
           );
           console.log(totalHumidity, TempData.length);
-          const averageHumidity = totalHumidity / TempData.length;
+          const averageHumidity = parseFloat(
+            totalHumidity / TempData.length
+          ).toFixed(0);
           console.log(TempData.length);
           console.log(averageHumidity, averagetemperature);
           //update the avg table by detectiondate
@@ -107,7 +242,7 @@ historicaltempSchema.statics.createHistoricalTemphum = async function (body) {
             detectionTime: body.detectionTime,
             humidity: averageHumidity,
             temperature: averagetemperature,
-            count:TempData.length
+            count: TempData.length,
           };
           console.log(body2);
           const updatedavg = await AvgTemp.updateAvgTempByDate(body2);
@@ -161,33 +296,44 @@ historicaltempSchema.statics.softDelete = async function (id) {
       throw new ApiError.notFound(
         "Historical Temperature and Humidity Data not found"
       );
-      
     }
-    deletedData.detectionTime = moment(new Date(deletedData.detectionTime)).format(
-      "YYYY-MM-DD"
-    );
+    deletedData.detectionTime = moment(
+      new Date(deletedData.detectionTime)
+    ).format("YYYY-MM-DD");
     console.log(deletedData.detectionTime);
-    const found_avg = await AvgTemp.find({detectionTime:deletedData.detectionTime})
-    console.log("AVG************************",found_avg);
-    if(!found_avg){
-      throw new Error("NO AVERAGE FOUND WITHING THAT DETECTION TIME ")
+    const found_avg = await AvgTemp.find({
+      detectionTime: deletedData.detectionTime,
+    });
+    console.log("AVG************************", found_avg);
+    if (!found_avg) {
+      throw new Error("NO AVERAGE FOUND WITHING THAT DETECTION TIME ");
     }
-    //we have found_avg[0].count   = totalTemp => (totalTemp - deletedData.temperature ) / count -1 
+    //we have found_avg[0].count   = totalTemp => (totalTemp - deletedData.temperature ) / count -1
     // const NewavgTemp = ((found_avg[0].temperature*count) - deletedData.temperature) / (count -1)
-    const NewAvgtemperature =((found_avg[0].temperature*found_avg[0].count) - deletedData.temperature) / (found_avg[0].count -1)
+    const NewAvgtemperature = parseFloat(
+      (found_avg[0].temperature * found_avg[0].count -
+        deletedData.temperature) /
+        (found_avg[0].count - 1)
+    ).toFixed(0);
     console.log(found_avg[0].temperature, NewAvgHumidity);
-    const NewAvgHumidity =((found_avg[0].humidity*found_avg[0].count) - deletedData.humidity) / (found_avg[0].count -1)
+    const NewAvgHumidity = parseFloat(
+      (found_avg[0].humidity * found_avg[0].count - deletedData.humidity) /
+        (found_avg[0].count - 1)
+    ).toFixed(0);
 
-    const updating_Avg = await AvgTemp.findOneAndUpdate({_id:found_avg[0]._id},{
-      $set:{
-        humidity: NewAvgHumidity,
-        temperature: NewAvgtemperature,
-        count : found_avg[0].count-1
+    const updating_Avg = await AvgTemp.findOneAndUpdate(
+      { _id: found_avg[0]._id },
+      {
+        $set: {
+          humidity: NewAvgHumidity,
+          temperature: NewAvgtemperature,
+          count: found_avg[0].count - 1,
+        },
       }
-    })  
+    );
     console.log(updating_Avg);
-    if(!updating_Avg){
-      throw new Error("Failed updating Average table ")
+    if (!updating_Avg) {
+      throw new Error("Failed updating Average table ");
     }
     return deletedData;
   } catch (error) {

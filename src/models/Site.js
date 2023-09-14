@@ -25,6 +25,15 @@ const SiteSchema = new mongoose.Schema(
             type: String,
             required: true
         },
+        status:{
+            type: String,
+            enum:["online","offline","semi-online","danger"],
+            default: "online",
+        },
+        statusDetails:{
+            type: String,
+            default:"ok"
+        },
         isDeleted:{
             type: Boolean,
             default:false
@@ -53,14 +62,64 @@ SiteSchema.statics.createSite = async function (body) {
     return site;
 }
 
-SiteSchema.statics.getSites = async function (){
+SiteSchema.statics.getSites = async function (body){
     try {
     
-        const limit = 10;
-    
-        const sites = await this.find({} )
-          .limit(limit);
-    
+        const page = (body.page || 1) - 1;
+        const limit = body.limit || 10;
+        const skip = page * limit;
+        const sort = [[body.sortField || "createdAt", body.sortDirection || "desc"]];
+        let options = {
+            code: 1,
+            name: 1,
+            status: 1,
+            location: 1,
+            wilaya: 1,
+            region: 1,
+            statusDetails:1,
+            isDeleted: 1,
+            createdAt: 1,
+            updatedAt: 1,
+        }
+        const sites = await this.find({
+            isDeleted: { $ne: true },
+            ...(body.wilaya && { wilaya: body.wilaya }),
+            
+            ...(body.region && { region: body.region }),
+          
+           
+            ...(body.status && { status: body.status }),
+           
+            ...(body.code && { code: body.code }),
+            ...(body.name && { name: body.name }),
+            ...(body.search && {
+                $or: [
+                    { code: { $regex: body.search, $options: 'i' } },
+                    { name: { $regex: body.search, $options: 'i' } },
+                    { status: { $regex: body.search, $options: 'i' } },
+                   
+                    { wilaya: { $regex: body.search, $options: 'i' } },
+                    { region: { $regex: body.search, $options: 'i' } },
+                ]
+            }),
+            ...(body.location && {
+                location: {
+                    $near: {
+                        $geometry: {
+                            type: "Point",
+                            coordinates: body.location
+                        },
+                        // $maxDistance: body.maxDistance
+                    }
+                }
+            }),
+            ...(body.dateFrom &&
+                body.dateTo && {
+                createdAt: { $gte: body.dateFrom, $lte: body.dateTo }
+            }),
+        }, options).sort(sort)
+            .skip(skip)
+            .limit(limit)
         return sites;
       } catch (error) {
         console.error(error);

@@ -85,6 +85,26 @@ const getHistoricalTemphum = async (filterParams) => {
         throw new ApiError.InternalServerError('Error fetching Historical Temperature and Humidity Data');
     }
 };
+const getPerPeriod = async (body) => {
+    try {
+
+
+        const historicalData = await db.HistoricalTemphum.getPerPeriod(body)
+
+
+        
+
+        return {
+            result: true,
+            message: 'Historical Temperature and Humidity Data per period fetched successfully',
+            data: historicalData,
+        
+        };
+    } catch (e) {
+        logger.error(JSON.stringify(e));
+        throw new Error('Error fetching Historical Temperature and Humidity Data per period');
+    }
+};
 const getLatestTemp = async (devid) => {
     try {
 
@@ -132,6 +152,7 @@ module.exports = {
     DeleteHistoricalTemphum,
     getHistoricalTemphum,
     getLatestTemp,
+    getPerPeriod,
     getOneHistoricalTemphum,
     
 };

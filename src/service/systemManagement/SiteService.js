@@ -46,8 +46,8 @@ const deleteSite = async (userId, SiteId) => {
 }
 
 // get all
-const getSites = async () => {
-    const Sites = await db.Site.getSites()
+const getSites = async (body) => {
+    const Sites = await db.Site.getSites(body)
     const count = await db.Site.getSitesCount()
 
     return {

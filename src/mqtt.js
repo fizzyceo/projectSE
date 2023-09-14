@@ -3,11 +3,17 @@ const alertService = require("./service/systemManagement/alertService");
 const deviceService = require("./service/systemManagement/deviceService");
 const historicalTemp = require("./service/systemManagement/HistoricalTempHumService");
 const historicalWind = require("./service/systemManagement/HistoricalWindService");
+const siteService = require("../service/systemManagement/SiteService");
+
 const { logger } = require("./Logger");
 const _ = require("lodash");
 const fileData2 = require("../packet.json");
 const { log } = require("winston");
 const { getUniqueId } = require("./helpers/getUniqueId");
+const moment = require('moment');
+
+const TIME_TO_GO_OFFLINE = require("./config/systemManagement/TimeToGoOffline");
+const classifySite = require("./helpers/classifySite");
 require("dotenv").config();
 // Parse
 const protocol = "mqtt";
@@ -28,39 +34,50 @@ const client = mqtt.connect(connectUrl, {
   reconnectPeriod: 1000,
 });
 //subscribtion to the topic and the broker
+const deviceLastActivity = new Map();
+
 const subscribe = async () => {
   try {
+    /**NORMALMENT HNAYA KEYEN LOGIC TE3 SITE CLASSIFICATION.... */
+    let siteStatus = "online"
+
     console.log("Connected to mqtt");
     await client.subscribe("alerts");
+
     client.on("message", async function (topic, message, packet) {
+    
       let alertData = JSON.parse(message.toString());
 
       if (Array.isArray(alertData)) alertData = alertData[0];
+      const device = await deviceService.getDevices({
+        devId: alertData.deviceId,
+      });
+      // check which site this device belongs to
+      // fetch all devices related to that site to retreive the average data 
+      // device we can extract latest data
+      if (device.data.length > 0) {
+        const modified_device = await deviceService.updateDevice(
+          "",
+          device.data[0]._id, //this is a problem because it accepts _id not deviceId
+          {
+            status: alertData.status,
+            statusDetails: alertData.statusDetails,
+            battery: alertData.battery,
+            signal: alertData.signal,
+            lastOnline: moment(new Date()).format("YYYY-MM-DD HH:mm"),
+            version: alertData.version,
+          }
+        );
+      } else {
+        throw new Error("no device with such Id!");
+      }
+      deviceLastActivity.set(device.data[0]._id, Date.now());
+      
       if (alertData.type === "temp") {
-        const device = await deviceService.getDevices({
-          devId: alertData.deviceId,
-        });
-
-        if (device.data.length > 0) {
-          const modified_device = await deviceService.updateDevice(
-            "",
-            device.data[0]._id, //this is a problem because it accepts _id not deviceId
-            {
-              status: alertData.status,
-              statusDetails: alertData.statusDetails,
-              battery: alertData.battery,
-              signal: alertData.signal,
-              version: alertData.version,
-            }
-          );
-          console.log(modified_device);
-        } else {
-          throw new Error("no device with such Id!");
-        }
-        console.log(alertData.temp.humidity);
         const HistTempbody = {
           deviceId: device.data[0]._id,
           humidity: alertData.temp.humidity,
+          
           temperature: alertData.temp.temperature,
           detectionTime: alertData.ts,
         };
@@ -70,26 +87,7 @@ const subscribe = async () => {
           throw Error("error creating temperature humidity row!");
         }
       } else if (alertData.type === "wind") {
-        const device = await deviceService.getDevices({
-          devId: alertData.deviceId,
-        });
 
-        if (device.data.length > 0) {
-          const modified_device = await deviceService.updateDevice(
-            "",
-            device.data[0]._id, //this is a problem because it accepts _id not deviceId
-            {
-              status: alertData.status,
-              statusDetails: alertData.statusDetails,
-              battery: alertData.battery,
-              signal: alertData.signal,
-              version: alertData.version,
-            }
-          );
-          console.log(modified_device);
-        } else {
-          throw new Error("no device with such Id!");
-        }
         const WindBody = {
           deviceId: device.data[0]._id,
           speed: alertData.wind.speed,
@@ -97,31 +95,11 @@ const subscribe = async () => {
           detectionTime: alertData.ts,
         };
         const wind_row = await historicalWind.createHistWind(WindBody);
-        console.log(wind_row);
         if (!wind_row) {
           throw Error("error creating wind row!");
         }
       } else if (alertData.type === "windTemp") {
-        const device = await deviceService.getDevices({
-          devId: alertData.deviceId,
-        });
 
-        if (device.data.length > 0) {
-          const modified_device = await deviceService.updateDevice(
-            "",
-            device.data[0]._id, //this is a problem because it accepts _id not deviceId
-            {
-              status: alertData.status,
-              statusDetails: alertData.statusDetails,
-              battery: alertData.battery,
-              signal: alertData.signal,
-              version: alertData.version,
-            }
-          );
-          console.log(modified_device);
-        } else {
-          throw new Error("no device with such Id!");
-        }
         const WindBody = {
           deviceId: device.data[0]._id,
           speed: alertData.wind.speed,
@@ -129,7 +107,6 @@ const subscribe = async () => {
           detectionTime: alertData.ts,
         };
         const wind_row = await historicalWind.createHistWind(WindBody);
-        console.log(wind_row);
         if (!wind_row) {
           throw Error("error creating wind row!");
         }
@@ -145,10 +122,14 @@ const subscribe = async () => {
         if (!temp_hum) {
           throw Error("error creating temperature humidity row!");
         }
-          //1st solution: create a code generator function for 2 models 
-          //
+   
       }
-
+      //extract all devices from that siteId
+      // extract latest data from each device 
+      //
+      const classifiedSite = await classifySite(alertData.siteId)
+      console.log("*////////**/*/*/",classifiedSite);
+      //modify the site status on the table 
       //************** */ alert table handler **************
 
       //     const device = await deviceService.getMqttDeviceAndUpdate(_.omit(alertData, 'incidents'))
@@ -169,6 +150,33 @@ client.on("error", (error) => {
 client.on("reconnect", (error) => {
   logger.error(JSON.stringify(error));
 });
+
+//it restarts everytime we restart the server, maybe we should consider using a new table for this data 
+setInterval(() => {
+  const now = Date.now();
+  const lastOnline = moment(new Date()).format("YYYY-MM-DD HH:mm")
+  
+  deviceLastActivity.forEach((lastActivityTime, deviceId) => {
+    // Calculate the time elapsed since last activity
+    const timeElapsed = now - lastActivityTime;
+    // If the device has been idle for too long, mark it as offline
+    if (timeElapsed >= TIME_TO_GO_OFFLINE) {
+
+      deviceService.updateDevice("", deviceId, { status: "offline" })
+        .then((modified_device) => {
+          //we can apply the alert logic here!
+          console.log(`Device ${deviceId} marked as offline`);
+
+        })
+        .catch((error) => {
+          logger.error(`Error marking device ${deviceId} as offline: ${error}`);
+        });
+
+      // // Remove the device from the tracking map
+      // deviceLastActivity.delete(deviceId);
+    }
+  });
+}, 5000); // Check every 5 seconds (adjust as needed)
 
 // const subscribe2 = async (fileData) => {
 //     try {

@@ -11,7 +11,7 @@ const router = express.Router();
 
 // authorizeRoles('client')
 router.post('/create', SitesController.createSite)
-router.get('/get', SitesController.getSites)
+router.post('/get', SitesController.getSites)
 router.get('/get/:id', SitesController.getSite)
 router.put('/update/:id', SitesController.updateSite)
 router.delete('/delete/:id',  SitesController.deleteSite)

@@ -19,6 +19,10 @@ const getHistoricalTemphum = tryCatchWrapper(async (req, res, next) => {
     const result = await HistTempService.getHistoricalTemphum(req.body);
     return res.status(200).json(formatSuccessResponse(result,req));
 })
+const getTempPerPeriod = tryCatchWrapper(async (req, res, next) => { 
+    const result = await HistTempService.getPerPeriod(req.body);
+    return res.status(200).json(formatSuccessResponse(result,req));
+})
 const getLatestTempHum = tryCatchWrapper(async (req, res, next) => { 
     
     const result = await HistTempService.getLatestTemp(req.params.devid);
@@ -48,4 +52,5 @@ module.exports = {
     getOneHistoricalTemphum,
     DeleteHistoricalTemphum,
     updateHistoricalTemphum,   
+    getTempPerPeriod
 }

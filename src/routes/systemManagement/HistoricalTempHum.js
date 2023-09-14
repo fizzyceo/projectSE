@@ -10,6 +10,7 @@ const router = express.Router();
 // authorizeRoles('client')
 router.post("/create",HistoricalTempHumController.createHistoricalTemphum);
 router.get("/get", HistoricalTempHumController.getHistoricalTemphum);
+router.post("/period", HistoricalTempHumController.getTempPerPeriod);
 router.get("/latest/:devid", HistoricalTempHumController.getLatestTempHum);
 router.get("/get/:id", HistoricalTempHumController.getOneHistoricalTemphum);
 router.put("/update/:id", verifyToken, HistoricalTempHumController.updateHistoricalTemphum);

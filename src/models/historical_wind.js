@@ -99,7 +99,7 @@ historicalWindSchema.statics.createHistoricalWind = async function (body) {
             (sum, data) => sum + data.speed,
             0
           );
-          const averageSpeed = totalSpeed / windData.length;
+          const averageSpeed = parseFloat(totalSpeed / windData.length).toFixed(0);
 
           const directions = windData.map((data) => data.direction);
           const mostCommonDirection = frequent(directions);
