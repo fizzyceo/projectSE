@@ -6,7 +6,6 @@ const ApiError = require("../error/api-error");
 const AvgWind = require("./avg_wind");
 
 const device = require("./devices");
-const { default: axios } = require("axios");
 const frequent = require("../helpers/frequent");
 
 const historicalWindSchema = new mongoose.Schema(
@@ -49,7 +48,7 @@ const historicalWindSchema = new mongoose.Schema(
 
 historicalWindSchema.statics.getHistoricalWind = async function () {
   try {
-    const historicalData = await this.find({});
+    const historicalData = await this.find({}).cache('histWind').lean();
 
     return historicalData;
   } catch (error) {
@@ -112,7 +111,7 @@ historicalWindSchema.statics.createHistoricalWind = async function (body) {
 
           const updatedavg = await AvgWind.updateAvgWindByDate(body2);
         } else {
-          // No document with the specified date exists in the AvgTemp collection.
+          // No document with the specified date exists in the AvgWind collection.
           console.log("No document found for the specified date.");
           const createAvg = await AvgWind.createAvgWind(body);
           return historicalData;
@@ -139,7 +138,7 @@ historicalWindSchema.statics.updateHistoricalWind = async function (body) {
     );
     if (!updatedData) {
       throw new ApiError.notFound(
-        "Historical Temperature and Humidity Data not found"
+        "Historical Winderature and Humidity Data not found"
       );
     }
     return updatedData;
@@ -171,7 +170,7 @@ historicalWindSchema.statics.softDelete = async function (id) {
 
     if (!deletedData) {
       throw new ApiError.notFound(
-        "Historical Temperature and Humidity Data not found"
+        "Historical Winderature and Humidity Data not found"
       );
     }
     // const body2 = {
@@ -189,10 +188,10 @@ historicalWindSchema.statics.softDelete = async function (id) {
 };
 historicalWindSchema.statics.getOne = async function (id) {
   try {
-    const data = await this.findOne({ _id: id }).populate("site", "name");
+    const data = await this.findOne({ _id: id }).populate("site", "name").cache('histWind').lean();
     if (!data) {
       throw new ApiError.notFound(
-        "Historical Temperature and Humidity Data not found"
+        "Historical Winderature and Humidity Data not found"
       );
     }
     return data;
@@ -203,15 +202,15 @@ historicalWindSchema.statics.getOne = async function (id) {
 };
 historicalWindSchema.statics.getLatest = async function (devId) {
   try {
-    // Find the latest historical temperature entry
+    // Find the latest historical Winderature entry
     const latestWindEntry = await this.findOne({ deviceId: devId })
       .sort({ detectionTime: -1 }) // Sort by detectionTime in descending order to get the latest entry
       .populate({
         path: "deviceId",
         model: "Device",
         select: "devId label type status location", // Include only state and coordinates fields from the Device model
-      });
-
+      }).cache('histWind').lean();
+      
     if (!latestWindEntry) {
       return null;
     }

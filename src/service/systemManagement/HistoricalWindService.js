@@ -5,7 +5,6 @@ const ApiError = require('../../error/api-error');
 
 // Create Historical Wind Data
 const createHistWind = async (body) => {
-    console.log(body);
     try {
         const historicalData = await db.HistoricalWind.createHistoricalWind(body);
         return {
@@ -45,9 +44,7 @@ const updateHistoricalWind = async (id, body) => {
 const DeleteHistoricalWind = async (id) => {
     try {
 
-        console.log("id***************",id);
         const deletedData = await db.HistoricalWind.softDelete(id);
-        console.log(deletedData);
         if (!deletedData) {
             throw new ApiError.NotFound('Historical Wind Data not found');
         }

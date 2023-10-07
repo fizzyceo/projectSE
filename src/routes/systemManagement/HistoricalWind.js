@@ -8,11 +8,11 @@ const clearCache = require("../../cachingSystem/middleware/clearCache");
 const router = express.Router();
 
 // authorizeRoles('client')
-router.post("/create",HistWindController.createHistoricalWind);
+router.post("/create",clearCache("histWind"),HistWindController.createHistoricalWind);
 router.get("/get", HistWindController.getHistoricalWind);
 router.get("/latest/:devid",HistWindController.getLatestWind)
 router.get("/get/:id", HistWindController.getOneHistoricalWind);
-router.put("/update/:id", verifyToken, HistWindController.updateHistoricalWind);
-router.delete("/delete/:id", HistWindController.DeleteHistoricalWind);
+router.put("/update/:id",clearCache("histWind") ,verifyToken, HistWindController.updateHistoricalWind);
+router.delete("/delete/:id",clearCache("histWind"), HistWindController.DeleteHistoricalWind);
 
 module.exports = router;

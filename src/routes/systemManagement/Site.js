@@ -10,10 +10,11 @@ const router = express.Router();
 
 
 // authorizeRoles('client')
-router.post('/create', SitesController.createSite)
+router.post('/create',clearCache("site"), SitesController.createSite)
+router.get("/monitor",SitesController.monitorSites)
 router.post('/get', SitesController.getSites)
 router.get('/get/:id', SitesController.getSite)
-router.put('/update/:id', SitesController.updateSite)
-router.delete('/delete/:id',  SitesController.deleteSite)
+router.put('/update/:id', clearCache("site"),SitesController.updateSite)
+router.delete('/delete/:id',clearCache("site"),  SitesController.deleteSite)
 
 module.exports = router;

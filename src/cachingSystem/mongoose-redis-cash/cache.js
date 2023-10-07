@@ -1,20 +1,32 @@
 // cach system with mongoose
 
 const mongoose = require('mongoose')
-const { client } = require('../redisClient')
+const { client } = require('../redisClient');
+const { CACHE_EXPIRATION_TIME } = require('../../config/timers');
 const exec = mongoose.Query.prototype.exec
 require('dotenv').config()
+function hGetAsync(client, hashKey, key) {
+    return new Promise((resolve, reject) => {
+      client.hGet(hashKey, key, (err, rescache) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(rescache);
+        }
+      });
+    });
+  }
+  
 mongoose.Query.prototype.cache = function (hashKey) {
     this.useCache = true;
     this.hashKey = hashKey
+    this.cacheExpiration = CACHE_EXPIRATION_TIME; 
     return this;
 }
 
 if (client && !process.env.VERCEL) {
     mongoose.Query.prototype.exec = async function () {
-        console.log("in the cache");
         if (!this.useCache) {
-            console.log("in the usecache");
             return await exec.apply(this, arguments)
         }
         const key = JSON.stringify(
@@ -22,9 +34,8 @@ if (client && !process.env.VERCEL) {
         );
 
         // See if we have a value for 'key' in redis
-
-        const cachedValue = await client.HGET(this.hashKey, key)
-        console.log(cachedValue);
+        const cachedValue = await hGetAsync(client, this.hashKey, key);
+        
         if (cachedValue  ) {
         
             console.log('getting data from cash');
@@ -37,6 +48,7 @@ if (client && !process.env.VERCEL) {
         // Else , issue the query and store the result in redis
         const result = await exec.apply(this, arguments);
         client.hSet(this.hashKey, key, JSON.stringify(result))
+
         return result;
 
     }

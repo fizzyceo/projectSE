@@ -14,6 +14,10 @@ const updateSite = tryCatchWrapper(async (req, res, next) => {
     const result = await siteService.updateSite( req.params.id, req.body);
     return res.status(200).json(formatSuccessResponse(result,req));
 })
+const monitorSites =  tryCatchWrapper(async (req, res, next) => { 
+    const result = await siteService.monitor();
+    return res.status(200).json(formatSuccessResponse(result,req));
+})
 
 const getSites = tryCatchWrapper(async (req, res, next) => { 
     const result = await siteService.getSites(req.body);
@@ -39,6 +43,7 @@ module.exports = {
     createSite,
     getSites,
     getSite,
+    monitorSites,
     deleteSite,
     updateSite,
     

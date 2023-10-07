@@ -48,7 +48,7 @@ AvgTempSchema.statics.getAvgTemp= async function() {
     
         const limit = 10;
     
-        const AvgData = await this.find({} )
+        const AvgData = await this.find({} ).cache("avgTemp").lean()
           .limit(limit);
     
         return AvgData;
@@ -59,7 +59,7 @@ AvgTempSchema.statics.getAvgTemp= async function() {
 }
 //ERROR HERE
 AvgTempSchema.statics.createAvgTemp= async function(body) {
-    console.log("testt in function");
+    console.log("creating avg temp");
     body.code = await getUniqueId(this);
     try {
       const AvgData = new this(body);
@@ -123,7 +123,7 @@ AvgTempSchema.statics.updateAvgTempByDate = async function (body) {
           $lte: body.selectedDates[1]
         }
       } )
-        .limit(limit);
+        .limit(limit).cache("avgTemp").lean();
   
       return AvgData;
     } catch (error) {
@@ -149,7 +149,7 @@ AvgTempSchema.statics.softDelete = async function(id) {
 }
 AvgTempSchema.statics.getOne=async function(id) {
     try {
-        const data = await this.findOne({ _id: id }).populate('site', 'name');
+        const data = await this.findOne({ _id: id }).populate('site', 'name').cache("avgTemp").lean();
         if (!data) {
             throw new ApiError.notFound('Historical Temperature and Humidity Data not found');
         }

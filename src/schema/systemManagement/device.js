@@ -5,7 +5,7 @@ const isMongooseId = require('../../helpers/isMongooseId')
 const createDeviceDto = {
   body: Joi.object({
     label: Joi.string().required(),
-    type: Joi.string().required().valid("camera","temperature","wind","windTemp"),
+    type: Joi.string().required().valid("camera","temp","wind","windTemp"),
     version: Joi.string().required(),
     wilaya: Joi.string().required(),
     region: Joi.string().required(),

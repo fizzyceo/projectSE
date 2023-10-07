@@ -5,8 +5,7 @@ const ApiError = require('../../error/api-error');
 
 // Create Historical Temperature and Humidity Data
 const createHistTemp = async (body) => {
-    console.log("this is the body ******************");
-    console.log(body);
+
     try {
         const historicalData = await db.HistoricalTemphum.createHistoricalTemphum(body);
         return {
@@ -47,9 +46,7 @@ const updateHistoricalTemphum = async (id, body) => {
 // Soft Delete Historical Temperature and Humidity Data
 const DeleteHistoricalTemphum = async (id) => {
     try {
-        console.log(id);
         const deletedData = await db.HistoricalTemphum.softDelete(id);
-        console.log(deletedData);
         if (!deletedData) {
             throw new ApiError.NotFound('Historical Temperature and Humidity Data not found');
         }
@@ -108,7 +105,6 @@ const getPerPeriod = async (body) => {
 const getLatestTemp = async (devid) => {
     try {
 
-        console.log("devvvvIDDDDD ", devid);
         const historicalData = await db.HistoricalTemphum.getLatest(devid)
 
         return {

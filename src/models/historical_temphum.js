@@ -48,7 +48,6 @@ historicaltempSchema.statics.getPerPeriod = async function (body) {
     const interval = body.interval; // period between each data
     //body.date
 
-    console.log(specificDate, interval);
     //body.period
     // Calculate the start and end timestamps for the specific date
     const startDate = moment(specificDate)
@@ -58,14 +57,13 @@ historicaltempSchema.statics.getPerPeriod = async function (body) {
       .endOf("day")
       .format("YYYY-MM-DD HH:mm");
     // Query for historical data within the date range
-    console.log(startDate);
 
     const historicalData = await this.find({
       detectionTime: {
         $gte: startDate,
         $lte: endDate,
       },
-    }).sort({ detectionTime: "asc" });
+    }).sort({ detectionTime: "asc" }).cache('histTemp').lean();;
 
     // Initialize variables to calculate the average
     let currentInterval = null;
@@ -95,7 +93,6 @@ historicaltempSchema.statics.getPerPeriod = async function (body) {
       ) {
         // Calculate the end time for the interval
         currentInterval.end = detectionTime.format("YYYY-MM-DD HH:mm");
-        console.log(detectionTime);
         // Calculate the average for the current interval
         currentInterval.temperature = parseFloat(
           totalTemperature / count
@@ -174,7 +171,7 @@ historicaltempSchema.statics.getPerPeriod = async function (body) {
 historicaltempSchema.statics.getHistoricalTemphum = async function () {
   try {
     const limit = 10;
-    const historicalData = await this.find({}).limit(limit);
+    const historicalData = await this.find({}).limit(limit).cache('histTemp').lean();
 
     return historicalData;
   } catch (error) {
@@ -221,7 +218,6 @@ historicaltempSchema.statics.createHistoricalTemphum = async function (body) {
             (sum, data) => sum + data.temperature,
             0
           );
-          console.log(totaltemperature, TempData.length);
           const averagetemperature = parseFloat(
             totaltemperature / TempData.length
           ).toFixed(0);
@@ -231,12 +227,10 @@ historicaltempSchema.statics.createHistoricalTemphum = async function (body) {
             (sum, data) => sum + data.humidity,
             0
           );
-          console.log(totalHumidity, TempData.length);
           const averageHumidity = parseFloat(
             totalHumidity / TempData.length
           ).toFixed(0);
-          console.log(TempData.length);
-          console.log(averageHumidity, averagetemperature);
+  
           //update the avg table by detectiondate
           const body2 = {
             detectionTime: body.detectionTime,
@@ -244,7 +238,6 @@ historicaltempSchema.statics.createHistoricalTemphum = async function (body) {
             temperature: averagetemperature,
             count: TempData.length,
           };
-          console.log(body2);
           const updatedavg = await AvgTemp.updateAvgTempByDate(body2);
         } else {
           // No document with the specified date exists in the AvgTemp collection.
@@ -300,11 +293,9 @@ historicaltempSchema.statics.softDelete = async function (id) {
     deletedData.detectionTime = moment(
       new Date(deletedData.detectionTime)
     ).format("YYYY-MM-DD");
-    console.log(deletedData.detectionTime);
     const found_avg = await AvgTemp.find({
       detectionTime: deletedData.detectionTime,
     });
-    console.log("AVG************************", found_avg);
     if (!found_avg) {
       throw new Error("NO AVERAGE FOUND WITHING THAT DETECTION TIME ");
     }
@@ -331,7 +322,6 @@ historicaltempSchema.statics.softDelete = async function (id) {
         },
       }
     );
-    console.log(updating_Avg);
     if (!updating_Avg) {
       throw new Error("Failed updating Average table ");
     }
@@ -343,7 +333,7 @@ historicaltempSchema.statics.softDelete = async function (id) {
 };
 historicaltempSchema.statics.getOne = async function (id) {
   try {
-    const data = await this.findOne({ _id: id }).populate("site", "name");
+    const data = await this.findOne({ _id: id }).populate("site", "name").cache('histTemp').lean();;
     if (!data) {
       throw new ApiError.notFound(
         "Historical Temperature and Humidity Data not found"
@@ -365,7 +355,7 @@ historicaltempSchema.statics.getLatest = async function (devId) {
         path: "deviceId",
         model: "Device",
         select: "devId label type status location", // Include only state and coordinates fields from the Device model
-      });
+      }).cache('histTemp').lean();
 
     if (!latestTemperatureEntry) {
       return null;

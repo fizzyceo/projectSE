@@ -5,7 +5,7 @@ services:
     image: khalidghanamy/wildfire:test-10
     restart: always
     ports:
-      - "4053:4053"
+      - "5001:5001"
     links:
       - mongo
       - redis
@@ -37,7 +37,7 @@ services:
     image: redis
     restart: unless-stopped
     ports:
-      - "6379:6379"
+      - "17146:17146"
     volumes: 
       - /home/wildFire/cache:/data
     networks:

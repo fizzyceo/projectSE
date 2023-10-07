@@ -40,7 +40,7 @@ AvgWindSchema.statics.getAvgWind = async function () {
     
     const limit = 10;
 
-    const AvgData = await this.find({} )
+    const AvgData = await this.find({} ).cache("avgWind").lean()
       .limit(limit);
 
     return AvgData;
@@ -61,7 +61,7 @@ AvgWindSchema.statics.getAvgWindBetweenDates = async function (body) {
         $lte: body.selectedDates[1]
       }
     } )
-      .limit(limit);
+      .limit(limit).cache("avgWind").lean();
 
     return AvgData;
   } catch (error) {
@@ -72,7 +72,7 @@ AvgWindSchema.statics.getAvgWindBetweenDates = async function (body) {
 
 //ERROR HERE
 AvgWindSchema.statics.createAvgWind = async function (body) {
-  console.log("testt in function");
+  console.log("creating AVG wind");
   body.code = await getUniqueId(this);
   body.speed = parseFloat(body.speed).toFixed(2)
   try {
@@ -145,7 +145,7 @@ AvgWindSchema.statics.softDelete = async function (id) {
 };
 AvgWindSchema.statics.getOne = async function (id) {
   try {
-    const data = await this.findOne({ _id: id }).populate("site", "name");
+    const data = await this.findOne({ _id: id }).populate("site", "name").cache("avgWind").lean();
     if (!data) {
       throw new ApiError.notFound(
         "Avg Temperature and Humidity Data not found"

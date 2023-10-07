@@ -15,6 +15,6 @@ RUN npm i
 COPY . .
 
 #Expose the port
-EXPOSE 4053
+EXPOSE 5001
 
-CMD [ "npm","start" ]
+CMD [ "npm","run","dev" ]
