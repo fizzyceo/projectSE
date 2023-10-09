@@ -47,6 +47,9 @@ const SiteSchema = new mongoose.Schema(
       type: String,
       default: "ok",
     },
+    contact:{
+      type:Number
+    },
     isDeleted: {
       type: Boolean,
       default: false,

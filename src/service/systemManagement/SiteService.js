@@ -52,6 +52,7 @@ const deleteSite = async (userId, SiteId) => {
 // get all
 const getSites = async (body) => {
   const Sites = await db.Site.getSites(body);
+  console.log(Sites);
   const count = await db.Site.getSitesCount();
 
   return {
