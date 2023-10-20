@@ -42,8 +42,68 @@ const historicaltempSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+historicaltempSchema.statics.getHistoricalTemphum = async function (body) {
+  try {
+    const page = (body?.page || 1) - 1;
+    const limit = body?.limit || 10;
+    const skip = page * limit;
+    const sort = [
+      [body?.sortField || "createdAt", body?.sortDirection || "desc"],
+    ];
+    let options = {
+      code: 1,
+      detectionTime: 1,
+      humidity: 1,
+      temperature: 1,
+      source: 1,
+      deviceId: 1,
+      isDeleted: 1,
+      createdAt: 1,
+      updatedAt: 1,
+    };
+    const historicalData = await this.find(
+      {
+        isDeleted: { $ne: true },
+        ...(body?.humidity && { humidity: body?.humidity }),
+        ...(body?.temperature && { temperature: body?.temperature }),
+        ...(body?.detectionTime && { detectionTime: body?.detectionTime }),
+        ...(body?.source && { source: body?.source }),
+        ...(body?.deviceId && { deviceId: body?.deviceId }),
+        ...(body?.code && { code: body?.code }),
+        
+        ...(body?.search && {
+          $or: [
+            { code: { $regex: body?.search, $options: "i" } },
+            { detectionTime: { $regex: body?.search, $options: "i" } },
+            { source: { $regex: body?.search, $options: "i" } },
+
+            { deviceId: { $regex: body?.search, $options: "i" } },
+            { region: { $regex: body?.search, $options: "i" } },
+          ],
+        }),
+        ...(body?.dateFrom &&
+          body?.dateTo && {
+            createdAt: { $gte: body?.dateFrom, $lte: body?.dateTo },
+          }),
+      },
+      options
+    )
+      .sort(sort)
+      .skip(skip)
+      .limit(limit)
+      // .cache("histTemp")
+      .lean();
+    return historicalData;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
 historicaltempSchema.statics.getPerPeriod = async function (body) {
   try {
+    //WE HAVE THE DEVICE ID TO WORK WITH, SO THE REQUEST SHOULD BE FOR EACH DEVICE WITHING THAT SITE AND THE RESEMBLING OF ALL THE DATA IS DONE ON THE FRONTEND
+    
     const specificDate = body.date;
     const interval = body.interval; // period between each data
     //body.date
@@ -63,7 +123,7 @@ historicaltempSchema.statics.getPerPeriod = async function (body) {
         $gte: startDate,
         $lte: endDate,
       },
-    }).sort({ detectionTime: "asc" }).cache('histTemp').lean();;
+    }).sort({ detectionTime: "asc" });; //cache('histTemp').lean()
 
     // Initialize variables to calculate the average
     let currentInterval = null;
@@ -123,62 +183,14 @@ historicaltempSchema.statics.getPerPeriod = async function (body) {
       }
     }
 
-    // historicalData.forEach((data) => {
-    //   const detectionTime = moment(data.detectionTime);
-    //   if (!currentInterval) {
-    //     // Start a new interval
-    //     currentInterval = {
-    //       start: detectionTime.format('YYYY-MM-DD HH:mm'), // Start time
-    //       end: null, // End time (to be calculated)
-    //       exactdate: specificDate,
-    //       data: [],
-    //     };
-    //   }
-
-    //   // Add data to the current interval
-    //   currentInterval.data.push(data);
-
-    //   // Accumulate temperature and humidity values for averaging
-    //   totalTemperature += data.temperature;
-    //   totalHumidity += data.humidity;
-    //   count++;
-
-    //   // Check if the current interval has reached the desired duration
-    //   console.log(detectionTime,detectionTime.diff(moment(currentInterval.start), 'minutes'));
-
-    //   if (detectionTime.diff(moment(currentInterval.start), 'minutes') >= interval) {
-    //     // Calculate the end time for the interval
-    //     currentInterval.end = detectionTime.format('YYYY-MM-DD HH:mm');
-    //     // Calculate the average for the current interval
-    //     currentInterval.temperature = parseFloat(totalTemperature / count).toFixed(0) ;
-    //     currentInterval.humidity =parseFloat( totalHumidity/ count).toFixed(0)  / count;
-    //     averagedData.push(currentInterval);
-
-    //     // Reset counters and start a new interval
-    //     totalTemperature = 0;
-    //     totalHumidity = 0;
-    //     count = 0;
-    //     currentInterval = null;
-    //   }
-    // });
-
+   
     return averagedData;
     //
   } catch (err) {
     throw new Error(err);
   }
 };
-historicaltempSchema.statics.getHistoricalTemphum = async function () {
-  try {
-    const limit = 10;
-    const historicalData = await this.find({}).limit(limit).cache('histTemp').lean();
 
-    return historicalData;
-  } catch (error) {
-    console.error(error);
-    throw error;
-  }
-};
 //ERROR HERE
 historicaltempSchema.statics.createHistoricalTemphum = async function (body) {
   console.log("testt in function");
@@ -186,7 +198,10 @@ historicaltempSchema.statics.createHistoricalTemphum = async function (body) {
   try {
     if (body.deviceId) {
       const deviceExists = await device.getOne(body.deviceId);
+      //set device status to online 
       if (deviceExists) {
+        if(!body.detectionTime){ body.detectionTime = new Date().getTime(); }
+
         body.detectionTime = moment(new Date(body.detectionTime)).format(
           "YYYY-MM-DD HH:mm"
         );
@@ -333,7 +348,10 @@ historicaltempSchema.statics.softDelete = async function (id) {
 };
 historicaltempSchema.statics.getOne = async function (id) {
   try {
-    const data = await this.findOne({ _id: id }).populate("site", "name").cache('histTemp').lean();;
+    const data = await this.findOne({ _id: id })
+    .populate("site", "name")
+    // .cache('histTemp')
+    .lean();;
     if (!data) {
       throw new ApiError.notFound(
         "Historical Temperature and Humidity Data not found"

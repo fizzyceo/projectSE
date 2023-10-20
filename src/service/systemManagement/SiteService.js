@@ -11,9 +11,7 @@ const frequent = require("../../helpers/frequent");
 // create device
 const createSite = async (body) => {
   try {
-    console.log(body);
     const Site = await db.Site.createSite(body);
-    console.log(Site);
     return {
       result: true,
       message: "Site created successfully",
@@ -52,7 +50,6 @@ const deleteSite = async (userId, SiteId) => {
 // get all
 const getSites = async (body) => {
   const Sites = await db.Site.getSites(body);
-  console.log(Sites);
   const count = await db.Site.getSitesCount();
 
   return {

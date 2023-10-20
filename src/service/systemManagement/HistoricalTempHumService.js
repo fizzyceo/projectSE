@@ -62,11 +62,11 @@ const DeleteHistoricalTemphum = async (id) => {
 };
 
 // Get All Historical Temperature and Humidity Data
-const getHistoricalTemphum = async (filterParams) => {
+const getHistoricalTemphum = async (body) => {
     try {
 
 
-        const historicalData = await db.HistoricalTemphum.getHistoricalTemphum()
+        const historicalData = await db.HistoricalTemphum.getHistoricalTemphum(body)
 
 
         const count = await db.HistoricalTemphum.getCount();

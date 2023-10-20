@@ -2,7 +2,9 @@ version: "3"
 services:
   app:
     container_name: wildfire-test
-    image: khalidghanamy/wildfire:test-10
+    build:
+      context: .
+      dockerfile: Dockerfile
     restart: always
     ports:
       - "5001:5001"

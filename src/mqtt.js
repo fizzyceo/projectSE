@@ -3,6 +3,7 @@ const alertService = require("./service/systemManagement/alertService");
 const deviceService = require("./service/systemManagement/deviceService");
 const historicalTemp = require("./service/systemManagement/HistoricalTempHumService");
 const siteService = require("./service/systemManagement/SiteService");
+const SiteHistoryService = require("./service/systemManagement/SiteHistoryService");
 
 const historicalWind = require("./service/systemManagement/HistoricalWindService");
 const { logger } = require("./Logger");
@@ -19,6 +20,7 @@ const {
   RULE30_COUNT_TO_FLAG_DANGER,
   FDI_COUNT_TO_FLAG_DANGER,
 } = require("./config/timers");
+const historical_temphum = require("./models/historical_temphum");
 
 require("dotenv").config();
 const protocol = "mqtt";
@@ -43,6 +45,19 @@ const mqttClient = mqtt.connect(connectUrl, {
 });
 let danger_counter_fdi = 0;
 let danger_counter_rule30 = 0;
+
+let ElapsedTime = null
+
+const deviceElapsedTimes = new Map();
+// Map for average temperature per device
+const avgTempMap = new Map();
+
+// Map for average humidity per device
+const avgHumidityMap = new Map();
+
+// Map for average wind speed per device
+const avgSpeedMap = new Map();
+
 const subscribe = async () => {
   try {
     /**NORMALMENT HNAYA KEYEN LOGIC TE3 SITE CLASSIFICATION.... */
@@ -53,7 +68,6 @@ const subscribe = async () => {
     let avgWindSpeedPerRecord = 0;
 
     await mqttClient.subscribe("dgf/iot/backend");
-    let currentTime = new Date().getTime();
 
     mqttClient.on("message", async function (topic, message, packet) {
       //decode the packet
@@ -83,29 +97,54 @@ const subscribe = async () => {
         throw new Error("no device with such Id!");
       }
 
-      //check if it's time to create a new row in the historical table
+      //this should be unique to each device, because we could have multiple devices reporting to this server
+      const previousElapsedTime = deviceElapsedTimes.get(device.data[0]._id);
+      if (previousElapsedTime !== undefined) {
+        ElapsedTime = previousElapsedTime;
+      } else {
+        const last_historical_data = await historical_temphum.getHistoricalTemphum({
+          limit: 1,
+          sortDirection: "desc",
+          deviceId: device.data[0]._id,
+        });
+      
+        if (last_historical_data.length > 0) {
+          
+          const createdAtTimestamp = new Date(last_historical_data[0].createdAt).getTime();
+          const currentTime = new Date().getTime();
+      
+          ElapsedTime = currentTime - createdAtTimestamp;
+          deviceElapsedTimes.set(device.data[0]._id, ElapsedTime);
+        }
+      }
+      
+      console.log("Elapsed time: " + ElapsedTime + " FOR DEVICE " + alertData.deviceId);
 
-      const ElapsedTime = alertData.ts * 1000 - currentTime;
-      console.log("Elapsed time: " + ElapsedTime);
 
       // utilize the content of the packet
       if (alertData.type === "temp") {
-        if (ElapsedTime < TEMP_RECORD_TIME) {
+          avgHumidityMap.set(device.data[0]._id,alertData.temp.humidity);
+          avgTempMap.set(device.data[0]._id,alertData.temp.temperature);
+        if (ElapsedTime > TEMP_RECORD_TIME) {
           avgTempPerRecord =
             avgTempPerRecord > 0
               ? (avgTempPerRecord + alertData.temp.temperature) / 2
               : alertData.temp.temperature;
           avgHumidityPerRecord =
             avgHumidityPerRecord > 0
-              ? (avgHumidityPerRecord + alertData.temp.temperature) / 2
-              : alertData.temp.temperature;
+              ? (avgHumidityPerRecord + alertData.temp.humidity) / 2
+              : alertData.temp.humidity;
+
+          avgHumidityMap.set(device.data[0]._id,avgHumidityPerRecord);
+          avgTempMap.set(device.data[0]._id,avgTempPerRecord);
         } else {
           const HistTempbody = {
             deviceId: device.data[0]._id,
-            humidity: avgHumidityPerRecord,
-            temperature: avgTempPerRecord,
+            humidity: avgHumidityMap.get( device.data[0]._id) ||  alertData.temp.humidity,
+            temperature: avgTempMap.get( device.data[0]._id) ||  alertData.temp.temperature,
             detectionTime: alertData.ts * 1000,
           };
+
           const temp_hum = await historicalTemp.createHistTemp(HistTempbody);
 
           if (!temp_hum) {
@@ -115,10 +154,9 @@ const subscribe = async () => {
           avgHumidityPerRecord = 0;
           avgTempPerRecord = 0;
 
-          currentTime = new Date().getTime();
         }
       } else if (alertData.type === "wind") {
-        if (ElapsedTime < WIND_RECORD_TIME) {
+        if (ElapsedTime > WIND_RECORD_TIME) {
           avgWindSpeedPerRecord =
             avgWindSpeedPerRecord > 0
               ? (avgWindSpeedPerRecord + alertData.temp.temperature) / 2
@@ -134,20 +172,27 @@ const subscribe = async () => {
           if (!wind_row) {
             throw Error("error creating wind row!");
           }
+
           //reinitialize the current time, avg value for the next packet
           avgWindSpeedPerRecord = 0;
-          currentTime = new Date().getTime();
         }
       } else if (alertData.type === "windTemp") {
+
+        avgHumidityMap.set(device.data[0]._id,alertData.temp.humidity);
+        avgTempMap.set(device.data[0]._id,alertData.temp.temperature);
+        avgSpeedMap.set(device.data[0]._id,alertData.wind.speed);
+
         if (ElapsedTime < WIND_RECORD_TIME) {
           avgWindSpeedPerRecord =
             avgWindSpeedPerRecord > 0
-              ? (avgWindSpeedPerRecord + alertData.temp.temperature) / 2
-              : alertData.temp.temperature;
+              ? (avgWindSpeedPerRecord + alertData.wind.speed) / 2
+              : alertData.wind.speed;
+              avgSpeedMap.set(device.data[0]._id,avgWindSpeedPerRecord)
+
         } else {
           const WindBody = {
             deviceId: device.data[0]._id,
-            speed: alertData.wind.speed,
+            speed:  avgSpeedMap.get(device.data[0]._id) || alertData.wind.speed ,
             direction: alertData.wind.direction,
             detectionTime: alertData.ts * 1000,
           };
@@ -156,36 +201,60 @@ const subscribe = async () => {
           if (!wind_row) {
             throw Error("error creating wind row!");
           }
-          currentTime = new Date().getTime();
 
           console.log(wind_row);
         }
         if (ElapsedTime < TEMP_RECORD_TIME) {
+
           avgTempPerRecord =
             avgTempPerRecord > 0
               ? (avgTempPerRecord + alertData.temp.temperature) / 2
               : alertData.temp.temperature;
           avgHumidityPerRecord =
             avgHumidityPerRecord > 0
-              ? (avgHumidityPerRecord + alertData.temp.temperature) / 2
-              : alertData.temp.temperature;
+              ? (avgHumidityPerRecord + alertData.temp.humidity) / 2
+              : alertData.temp.humidity;
+              ElapsedTime
+          avgHumidityMap.set(device.data[0]._id,avgHumidityPerRecord);
+          avgTempMap.set(device.data[0]._id,avgTempPerRecord);
         } else {
+          console.log("Done temp calculation",avgTempMap.get(device.data[0]._id),ElapsedTime,TEMP_RECORD_TIME);
           const HistTempbody = {
             deviceId: device.data[0]._id,
-            humidity: avgHumidityPerRecord,
-            temperature: avgTempPerRecord,
+            humidity: avgHumidityMap.get( device.data[0]._id) ||  alertData.temp.humidity,
+            temperature: avgTempMap.get( device.data[0]._id) ||  alertData.temp.temperature,
             detectionTime: alertData.ts * 1000,
           };
           const temp_hum = await historicalTemp.createHistTemp(HistTempbody);
           if (!temp_hum) {
             throw Error("error creating temperature humidity row!");
           }
-          //reinitialize the current time, avg value for the next packet
-          avgHumidityPerRecord = 0;
-          avgTempPerRecord = 0;
-          avgWindSpeedPerRecord = 0;
+          const { siteClassification30, siteClassificationFDI, siteId } =
+          await classifySite(alertData,alertData.siteId);
+          const siteHistoryBody = {
+            siteId:siteId,
+            deviceId: device.data[0]._id,
+            humidity: avgHumidityMap.get( device.data[0]._id) ||  alertData.temp.humidity,
+            temperature: avgTempMap.get( device.data[0]._id) ||  alertData.temp.temperature,
+            speed:  avgSpeedMap.get(device.data[0]._id) || alertData.wind.speed ,
+            statusFDI:siteClassificationFDI.type,
+            isDangerous:siteClassificationFDI.danger,
+            status30:siteClassification30,
+            direction: alertData.wind.direction,
+            detectionTime: alertData.ts * 1000,
 
-          currentTime = new Date().getTime();
+          }
+          console.log(siteHistoryBody);
+          
+          const newHistory_Site = await SiteHistoryService.create(siteHistoryBody)
+          console.log(newHistory_Site)
+     // Clear elapsed time for the device
+          deviceElapsedTimes.set(device.data[0]._id, 0);
+
+     // Clear averages for the device
+          avgHumidityMap.set(device.data[0]._id, 0);
+          avgTempMap.set(device.data[0]._id, 0);
+          avgSpeedMap.set(device.data[0]._id, 0);
 
           console.log(
             "successfull windTemp packet treatment! ----------------------------------------------------------------"
@@ -194,23 +263,23 @@ const subscribe = async () => {
       }
 
       const { siteClassification30, siteClassificationFDI, siteId } =
-        await classifySite(alertData.siteId);
-      console.log(siteClassificationFDI);
+        await classifySite(alertData,alertData.siteId);
+      console.log(siteClassificationFDI,siteClassification30);
       if (
-        siteClassification30 !== "Danger" &&
-        !siteClassificationFDI.danger
+        siteClassification30 !== "danger" &&
+        !siteClassificationFDI?.danger
       ) {
         //change the status if its not dangerous
         const modifiedSite = await siteService.updateSite(siteId, {
           status30: siteClassification30,
-          statusFDI: siteClassificationFDI.type,
-          isDangerous: siteClassificationFDI.danger
+          statusFDI: siteClassificationFDI?.type,
+          isDangerous: siteClassificationFDI?.danger
         });
       } else {
         
         //if the  status is dangerous => checjk the counters before flagging it & senting alerts
 
-        if (siteClassification30 === "Danger") {
+        if (siteClassification30 === "danger") {
           if (danger_counter_rule30 >= RULE30_COUNT_TO_FLAG_DANGER) {
             const modifiedSite = await siteService.updateSite(siteId, {
               status30: siteClassification30,
@@ -231,7 +300,6 @@ const subscribe = async () => {
           if (danger_counter_fdi >= FDI_COUNT_TO_FLAG_DANGER) {
             //handle danger by setting the status to "danger" and senting an alert,
             //  const res =await handleDanger(siteId, siteClassificationFDI, "FDI")
-
             const modifiedSite = await siteService.updateSite(siteId, {
               statusFDI: siteClassificationFDI.type,
               isDangerous: siteClassificationFDI.danger

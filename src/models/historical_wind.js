@@ -46,16 +46,155 @@ const historicalWindSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-historicalWindSchema.statics.getHistoricalWind = async function () {
-  try {
-    const historicalData = await this.find({}).cache('histWind').lean();
 
+historicalWindSchema.statics.getHistoricalWind = async function (body) {
+  try {
+    const page = (body?.page || 1) - 1;
+    const limit = body?.limit || 10;
+    const skip = page * limit;
+    const sort = [
+      [body?.sortField || "createdAt", body?.sortDirection || "desc"],
+    ];
+    let options = {
+      code: 1,
+      detectionTime: 1,
+      direction: 1,
+      speed: 1,
+      source: 1,
+      deviceId: 1,
+      isDeleted: 1,
+      createdAt: 1,
+      updatedAt: 1,
+    };
+    const historicalData = await this.find(
+      {
+        isDeleted: { $ne: true },
+        ...(body?.direction && { direction: body?.direction }),
+        ...(body?.detectionTime && { detectionTime: body?.detectionTime }),
+        ...(body?.speed && { speed: body?.speed }),
+        ...(body?.source && { source: body?.source }),
+        ...(body?.deviceId && { deviceId: body?.deviceId }),
+        ...(body?.code && { code: body?.code }),
+        
+        ...(body?.search && {
+          $or: [
+            { code: { $regex: body?.search, $options: "i" } },
+            { detectionTime: { $regex: body?.search, $options: "i" } },
+            { source: { $regex: body?.search, $options: "i" } },
+
+            { deviceId: { $regex: body?.search, $options: "i" } },
+            { region: { $regex: body?.search, $options: "i" } },
+          ],
+        }),
+        ...(body?.dateFrom &&
+          body?.dateTo && {
+            createdAt: { $gte: body?.dateFrom, $lte: body?.dateTo },
+          }),
+      },
+      options
+    )
+      .sort(sort)
+      .skip(skip)
+      .limit(limit)
+      // .cache("histWind")
+      .lean();
     return historicalData;
   } catch (error) {
     console.error(error);
     throw error;
   }
 };
+
+
+historicalWindSchema.statics.getPerPeriod = async function (body) {
+  try {
+    const specificDate = body.date;
+    const interval = body.interval; // period between each data
+    //body.date
+
+    //body.period
+    // Calculate the start and end timestamps for the specific date
+    const startDate = moment(specificDate)
+      .startOf("day")
+      .format("YYYY-MM-DD HH:mm");
+    const endDate = moment(specificDate)
+      .endOf("day")
+      .format("YYYY-MM-DD HH:mm");
+    // Query for historical data within the date range
+
+    const historicalData = await this.find({
+      detectionTime: {
+        $gte: startDate,
+        $lte: endDate,
+      },
+
+    }).sort({ detectionTime: "asc" });
+    console.log("================================",historicalData)
+    // Initialize variables to calculate the average
+    let currentInterval = null;
+    let totalWindSpeed = 0;
+    
+    let count = 0;
+
+    // Store the averaged data
+    const averagedData = [];
+    for (let i = 0; i < historicalData.length; i++) {
+      const data = historicalData[i];
+      const detectionTime = moment(data.detectionTime);
+
+      if (!currentInterval) {
+        // Start a new interval
+        currentInterval = {
+          start: detectionTime.format("YYYY-MM-DD HH:mm"), // Start time
+          end: null, // End time (to be calculated)
+          exactdate: specificDate,
+          data: [],
+        };
+      }
+
+      // Check if the current interval has reached the desired duration
+      if (
+        detectionTime.diff(moment(currentInterval.start), "minutes") >= interval
+      ) {
+        // Calculate the end time for the interval
+        currentInterval.end = detectionTime.format("YYYY-MM-DD HH:mm");
+        // Calculate the average for the current interval
+        currentInterval.speed = parseFloat(
+          totalWindSpeed / count
+        ).toFixed(0);
+        
+        // Push the current interval to the result
+        averagedData.push(currentInterval);
+
+        // Reset counters and start a new interval
+        totalWindSpeed = 0;
+        
+        count = 0;
+        currentInterval = null;
+
+        // Continue processing the current data point
+        if (i != historicalData.length - 1) {
+          i--;
+        }
+      } else {
+        // Add data to the current interval
+        currentInterval.data.push(data);
+
+        // Accumulate speed and humidity values for averaging
+        totalWindSpeed += data.speed;
+        count++;
+      }
+    }
+
+   
+
+    return averagedData;
+    //
+  } catch (err) {
+    throw new Error(err);
+  }
+};
+
 //ERROR HERE
 historicalWindSchema.statics.createHistoricalWind = async function (body) {
   body.code = await getUniqueId(this);
@@ -67,6 +206,7 @@ historicalWindSchema.statics.createHistoricalWind = async function (body) {
     if (body.deviceId) {
       const deviceExists = await device.getOne(body.deviceId);
       if (deviceExists) {
+        if(!body.detectionTime){ body.detectionTime = new Date().getTime(); }
         body.detectionTime = moment(new Date(body.detectionTime)).format(
           "YYYY-MM-DD HH:mm"
         );

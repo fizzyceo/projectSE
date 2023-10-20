@@ -10,7 +10,7 @@ COPY package*.json ./
 
 RUN npm install -g npm@9.8.1
 # Install dependencies
-RUN npm i
+RUN npm i --force
 # Bundle app source
 COPY . .
 

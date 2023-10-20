@@ -3,11 +3,16 @@ const pointSchema = require("./point");
 const { getUniqueId } = require("../helpers/getUniqueId");
 const moment = require("moment");
 const ApiError = require("../error/api-error");
+const { ObjectId } = require("mongodb");
 
 const SiteSchema = new mongoose.Schema(
   {
     code: { type: String, required: true, unique: true },
-
+    regionId:{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "region",
+      
+    },
     name: {
       type: String,
       unique: true,
@@ -69,6 +74,12 @@ SiteSchema.statics.createSite = async function (body) {
       coordinates: body.location,
     };
   }
+  if (body.regionId) {
+    body.regionId = {
+      type: "region",
+      regionId: body.regionId,
+    };
+  }
   body.code = await getUniqueId(this);
 
   const site = new this(body);
@@ -88,6 +99,8 @@ SiteSchema.statics.getSites = async function (body) {
       code: 1,
       name: 1,
       status: 1,
+      regionId:1,
+
       statusFDI: 1,
       status30: 1,
       location: 1,
@@ -103,6 +116,7 @@ SiteSchema.statics.getSites = async function (body) {
         isDeleted: { $ne: true },
         ...(body?.wilaya && { wilaya: body?.wilaya }),
 
+        ...(body?.regionId && { regionId: body?.regionId }),
         ...(body?.region && { region: body?.region }),
 
         ...(body?.status && { status: body?.status }),
@@ -142,7 +156,7 @@ SiteSchema.statics.getSites = async function (body) {
       .sort(sort)
       .skip(skip)
       .limit(limit)
-      .cache("site")
+      // .cache("site")
       .lean();
     return sites;
   } catch (error) {
@@ -182,7 +196,15 @@ SiteSchema.statics.updateSite = async function (body) {
       coordinates: body.location,
     };
   }
-  console.log(body.id);
+  // if (body.regionId) {
+  //   const validRegionId = ObjectId.isValid(body.regionId) ? new ObjectId(body.regionId) : null;
+
+  //   body.regionId = {
+
+  //     type: "region",
+  //     regionId: validRegionId,
+  //   };
+  // }
   const site = await this.find({ _id: body.id });
   if (!site) throw ApiError.notFound("site not found");
   //change last update

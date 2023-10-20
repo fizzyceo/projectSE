@@ -17,7 +17,26 @@ const createHistWind = async (body) => {
         throw new Error('Error creating Historical Wind Data');
     }
 };
+const getPerPeriod = async (body) => {
+    try {
 
+
+        const historicalData = await db.HistoricalWind.getPerPeriod(body)
+
+
+        
+
+        return {
+            result: true,
+            message: 'Historical Wind Data per period fetched successfully',
+            data: historicalData,
+        
+        };
+    } catch (e) {
+        logger.error(JSON.stringify(e));
+        throw new Error('Error fetching Historical Wind Data per period');
+    }
+};
 // Update Historical Wind Data
 const updateHistoricalWind = async (id, body) => {
     try {
@@ -61,11 +80,11 @@ const DeleteHistoricalWind = async (id) => {
 };
 
 // Get All Historical Wind Data
-const getHistoricalWind = async () => {
+const getHistoricalWind = async (body) => {
     try {
 
 
-        const historicalData = await db.HistoricalWind.getHistoricalWind()
+        const historicalData = await db.HistoricalWind.getHistoricalWind(body)
 
 
         const count = await db.HistoricalWind.getCount();
@@ -124,6 +143,7 @@ const getLatestWind = async (devid) => {
 
 module.exports = {
     createHistWind,
+    getPerPeriod,
     updateHistoricalWind,
     DeleteHistoricalWind,
     getHistoricalWind,

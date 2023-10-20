@@ -9,7 +9,7 @@ const router = express.Router();
 
 // authorizeRoles('client')
 router.post("/create", clearCache("histTemp"),HistoricalTempHumController.createHistoricalTemphum);
-router.get("/get", HistoricalTempHumController.getHistoricalTemphum);
+router.post("/get", HistoricalTempHumController.getHistoricalTemphum);
 router.post("/period", HistoricalTempHumController.getTempPerPeriod);
 router.get("/latest/:devid", HistoricalTempHumController.getLatestTempHum);
 router.get("/get/:id", HistoricalTempHumController.getOneHistoricalTemphum);

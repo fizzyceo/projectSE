@@ -9,7 +9,9 @@ const router = express.Router();
 
 // authorizeRoles('client')
 router.post("/create",clearCache("histWind"),HistWindController.createHistoricalWind);
-router.get("/get", HistWindController.getHistoricalWind);
+router.post("/get", HistWindController.getHistoricalWind);
+router.post("/period", HistWindController.getPerPeriod);
+
 router.get("/latest/:devid",HistWindController.getLatestWind)
 router.get("/get/:id", HistWindController.getOneHistoricalWind);
 router.put("/update/:id",clearCache("histWind") ,verifyToken, HistWindController.updateHistoricalWind);
