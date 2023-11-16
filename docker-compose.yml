@@ -1,7 +1,7 @@
 version: "3"
 services:
   app:
-    container_name: wildfire-test
+    container_name: wildfire-server-prod-test1
     build:
       context: .
       dockerfile: Dockerfile
@@ -17,7 +17,7 @@ services:
       - redis
       - mqtt
     volumes:
-      - /home/wildFire/wildfire-images-test:/usr/src/app/public
+      - /home/wildFire/wildfire-server-prod-test1:/usr/src/app/public
     environment:
       WAIT_HOSTS: mongo:27017
     networks:

@@ -1,127 +1,82 @@
-
 const sharp = require("sharp");
 const fs = require("fs");
-const path = require('path');
-const { logger } = require("../Logger");
+const path = require("path");
 const ApiError = require("../error/api-error");
 const dotenv = require("dotenv");
 dotenv.config();
 
 const checkDirectory = (folder) => {
-    const normalPath = `./public/images/${folder}/normal/`;
-    const smallPath = `./public/images/${folder}/small/`;
+  const normalPath = `./public/images/${folder}/normal/`;
+  const smallPath = `./public/images/${folder}/small/`;
 
-    const paths = [normalPath, smallPath];
-    paths.forEach((path) => {
-        const directory = path.split('/').slice(0, -1).join('/');
-        if (!fs.existsSync(directory)) {
-            fs.mkdirSync(directory, { recursive: true });
-        }
-    });
+  const paths = [normalPath, smallPath];
+  paths.forEach((path) => {
+    const directory = path.split("/").slice(0, -1).join("/");
+    if (!fs.existsSync(directory)) {
+      fs.mkdirSync(directory, { recursive: true });
+    }
+  });
 };
 const resizeImage = function (
-    folder = "random",
-    dimensions = {
-        normal: { width: 900, height: 630 },
-        small: { width: 200, height: 150 },
-    }
+  folder = "random",
+  dimensions = {
+    normal: { width: 900, height: 630 },
+    small: { width: 200, height: 150 },
+  }
 ) {
-    return async (req, res, next) => {
-        logger.info('image uploaded to server');
-        try {
-            if (!req.file) {
-                throw ApiError.badRequest('no file was uploaded');
-            }
-            const timestamp = + new Date();
-            const today =new Date();
-            const year = today.getFullYear();
-            const month = today.getMonth() + 1;
-            const day = today.getDate() + 1;
-            const datePath = `${year}/${month}/${day}`
-            checkDirectory(folder);
-            const smallUrl = `images/${folder}/normal/${timestamp}-${req.file.originalname}`
-            const normalUrl = `images/${folder}/small/${timestamp}-${req.file.originalname}`
-            const image = sharp(req.file.buffer);
-            const normalImagePath = path.resolve(`./public/${smallUrl}`);
-            const smallImagePath = path.resolve(`./public/${normalUrl}`);
-            await image.resize(
-                dimensions.normal.width, dimensions.normal.height,
-                {
-                    fit: sharp.fit.inside
-                }
-            ).toFile(normalImagePath);
-            await image.resize(dimensions.small.width, dimensions.small.height, {
-                fit: sharp.fit.inside,
-            }).toFile(smallImagePath);
+  return async (req, res, next) => {
+    console.info("image uploaded to server");
+    try {
+      if (!req.file) {
+        throw ApiError.badRequest("no file was uploaded");
+      }
+      const timestamp = +new Date();
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = today.getMonth() + 1;
+      const day = today.getDate() + 1;
+      const datePath = `${year}/${month}/${day}`;
+      checkDirectory(folder);
+      const smallUrl = `images/${folder}/normal/${timestamp}-${req.file.originalname}`;
+      const normalUrl = `images/${folder}/small/${timestamp}-${req.file.originalname}`;
+      const image = sharp(req.file.buffer);
+      const normalImagePath = path.resolve(`./public/${smallUrl}`);
+      const smallImagePath = path.resolve(`./public/${normalUrl}`);
+      await image
+        .resize(dimensions.normal.width, dimensions.normal.height, {
+          fit: sharp.fit.inside,
+        })
+        .toFile(normalImagePath);
+      await image
+        .resize(dimensions.small.width, dimensions.small.height, {
+          fit: sharp.fit.inside,
+        })
+        .toFile(smallImagePath);
 
-            logger.info('image resize success');
-            req.newImageUrls = [
-                {
-                    size: "normal",
-                    url: process.env.SERVER_URL + "/" + encodeURIComponent(smallUrl)
-                }, {
-                    size: 'small',
-                    url: process.env.SERVER_URL +"/"+ encodeURIComponent(normalUrl)
-                }];
-            next();
-        } catch (error) {
-            next(error);
-        }
+      console.info("image resize success");
+      req.newImageUrls = [
+        {
+          size: "normal",
+          url: process.env.SERVER_URL + "/" + encodeURIComponent(smallUrl),
+        },
+        {
+          size: "small",
+          url: process.env.SERVER_URL + "/" + encodeURIComponent(normalUrl),
+        },
+      ];
+      next();
+    } catch (error) {
+      next(error);
     }
-}
+  };
+};
 
 module.exports = resizeImage;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // const sharp = require("sharp");
 // const fs = require("fs");
 // const path = require('path');
-// const { logger } = require("../Logger");
+// const { console } = require("../console");
 // const ApiError = require("../error/api-error");
 
 // const tmpDirectory = path.resolve(`./tmp`);
@@ -145,7 +100,7 @@ module.exports = resizeImage;
 //     small: { width: 200, height: 150 }
 // }) {
 //     return async (req, res, next) => {
-//         logger.info('image uploaded to server');
+//         console.info('image uploaded to server');
 //         try {
 //             if (!req.file) {
 //                 throw ApiError.badRequest('no file was uploaded');
@@ -162,10 +117,10 @@ module.exports = resizeImage;
 //             await image.resize(dimensions.small.width, dimensions.small.height, {
 //                 fit: sharp.fit.inside,
 //             }).toFile(smallImagePath);
-//             logger.info('image resize success');
+//             console.info('image resize success');
 //             fs.rm(req.file.path, (err) => {
 //                 if (err)
-//                     logger.error("failed to delete file after resizeing")
+//                     console.error("failed to delete file after resizeing")
 //             });
 
 //             req.filesPaths = [{ type: "normal", path: normalImagePath }, { type: 'small', path: smallImagePath }];

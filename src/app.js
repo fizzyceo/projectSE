@@ -1,16 +1,13 @@
 const express = require("express");
 const cors = require("cors");
-const correlation = require('express-correlation-id');
+const correlation = require("express-correlation-id");
 
 const router = require("./routes");
 const apiErrorHandler = require("./error/api-error-handler");
 const { apiLimiter } = require("./middlewares/rateLimiter");
-const { logger } = require("./Logger");
 const morgan = require("morgan");
 const app = express();
 const server = require("http").createServer(app);
-require('./cachingSystem')
-
 
 //===== Middlewares ==========================================
 app.use(apiLimiter);
@@ -21,42 +18,42 @@ app.use(express.urlencoded({ extended: true }));
 app.use(correlation());
 
 app.use(
-    morgan('tiny', {
-        skip: (req) => req.method === 'OPTIONS' || req.url === '/health' || req.baseUrl === '/health',
-        stream: {
-            write: (message) => {
-                logger.info(message.substring(0, message.lastIndexOf('\n')));
-            }
-        }
-    })
+  morgan("tiny", {
+    skip: (req) =>
+      req.method === "OPTIONS" ||
+      req.url === "/health" ||
+      req.baseUrl === "/health",
+    stream: {
+      write: (message) => {
+        console.info(message.substring(0, message.lastIndexOf("\n")));
+      },
+    },
+  })
 );
 //===== static files ==========================================
 
-app.use(express.static('public'))
+app.use(express.static("public"));
 
 //===== Routes ==========================================
 app.use("/", router);
 
 //not found handler
-app.use((req, res, next) => { 
-    const error = new Error("Not Found");
-    error.status = 404;
-    next(error);
-})
+app.use((req, res, next) => {
+  const error = new Error("Not Found");
+  error.status = 404;
+  next(error);
+});
 //===== Error Handler ===================================
 app.use(apiErrorHandler);
 
-process.on('uncaughtException', (e) => {
-    logger.error(JSON.stringify(e));
-    console.log('uncaughtException : ',e);
+process.on("uncaughtException", (e) => {
+  console.error(JSON.stringify(e));
+  console.log("uncaughtException : ", e);
+});
 
-})
-
-process.on('unhandledRejection',(reason, promise) => {
-        logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
-    console.log('unhandledRejection : ', promise, 'reason:', reason);
-
-    }
-);
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("Unhandled Rejection at:", promise, "reason:", reason);
+  console.log("unhandledRejection : ", promise, "reason:", reason);
+});
 
 module.exports = server;

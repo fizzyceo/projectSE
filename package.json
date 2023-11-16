@@ -1,5 +1,5 @@
 {
-  "name": "iot",
+  "name": "se",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@supabase/supabase-js": "^2.38.4",
     "async-mqtt": "^2.6.3",
     "axios": "^1.5.0",
     "bcryptjs": "^2.4.3",

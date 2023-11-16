@@ -1,28 +1,21 @@
-const mongoose = require("mongoose");
-const { logger } = require("../Logger");
-const { updateCode } = require("../helpers/updateCode");
+const { createClient } = require("@supabase/supabase-js");
 
-const connectDb = (url, server) => {
-  mongoose
-    .connect(url, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      // auth: {
-      //   username: 'admin',
-      //   password: 'password'
-      // }
-    })
-    .then(async () => {
-      logger.info("Database connected");
+let supabaseInstance = null;
 
-    })
-    .then(()=>{
-      server();
-    })
-    .catch((error) => {
-      logger.error("database connection error");
-      logger.error(error.message);
-    });
+const connectDb = () => {
+  try {
+    if (!supabaseInstance) {
+      supabaseInstance = createClient(
+        process.env.ANON_PUBLIC,
+        process.env.SERVICE_ROLE
+      );
+      console.info("Connected to Supabase");
+    }
+    return supabaseInstance;
+  } catch (error) {
+    console.error("Supabase connection error", error);
+    throw error; // Re-throw the error for handling at the caller level if needed
+  }
 };
 
 module.exports = connectDb;
