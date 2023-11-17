@@ -1,0 +1,330 @@
+{
+  "Permission denied": {
+    "en": "Permission denied",
+    "ar": "ليس لديك الصلاحية للقيام بهذا الإجراء"
+  },
+
+  "no file was uploaded": {
+    "en": "no file was uploaded",
+    "ar": "لم يتم تحميل أي ملف"
+  },
+  "unauthorized": {
+    "en": "unauthorized",
+    "ar": "غير مصرح"
+  },
+  "facility booking does not exist": {
+    "en": "facility booking does not exist",
+    "ar": "حجز المرفق غير موجود"
+  },
+  "Car not found": {
+    "en": "Car not found",
+    "ar": "السيارة غير موجودة"
+  },
+  "Car already exists": {
+    "en": "Car already exists",
+    "ar": "السيارة موجودة بالفعل"
+  },
+  "Facility already exists": {
+    "en": "Facility already exists",
+    "ar": "المرفق موجود بالفعل"
+  },
+  "Facility type does not exist": {
+    "en": "Facility type does not exist",
+    "ar": "نوع المرفق غير موجود"
+  },
+  "From time should be equal or less than to time": {
+    "en": "From time should be equal or less than to time",
+    "ar": "وقت البداية يجب أن يكون مساويًا أو أقل من وقت النهاية"
+  },
+  "Closing period should be greater than current date": {
+    "en": "Closing period should be greater than current date",
+    "ar": "يجب أن يكون وقت الإغلاق أكبر من التاريخ الحالي"
+  },
+  "Facility does not exist": {
+    "en": "Facility does not exist",
+    "ar": "المرفق غير موجود"
+  },
+  "Facility is closed for booking during this time": {
+    "en": "Facility is closed for booking during this time",
+    "ar": "المرفق مغلق للحجز خلال هذا الوقت"
+  },
+  "Facility is not available for booking during this time": {
+    "en": "Facility is not available for booking during this time",
+    "ar": "المرفق غير متاح للحجز خلال هذا الوقت"
+  },
+
+  "facility booking is not available": {
+    "en": "facility booking is not available",
+    "ar": "حجز المرفق غير متاح"
+  },
+  "Request already cancelled or attended": {
+    "en": "Request already cancelled or attended",
+    "ar": "تم إلغاء الطلب أو تم حضوره بالفعل"
+  },
+  "Request not found": {
+    "en": "Request not found",
+    "ar": "الطلب غير موجود"
+  },
+  "Maintenance Request deleted or not found": {
+    "en": "Maintenance Request deleted or not found",
+    "ar": "تم حذف طلب الصيانة أو لم يتم العثور عليه"
+  },
+  "Maintenance Request not found": {
+    "en": "Maintenance Request not found",
+    "ar": "طلب الصيانة غير موجود"
+  },
+  "Maintenance Type already exists": {
+    "en": "Maintenance Type already exists",
+    "ar": "نوع الصيانة موجود بالفعل"
+  },
+
+  "Maintenance already deleted": {
+    "en": "Maintenance already deleted",
+    "ar": "تم حذف الصيانة بالفعل"
+  },
+  "Maintenance Type not found": {
+    "en": "Maintenance Type not found",
+    "ar": "نوع الصيانة غير موجود"
+  },
+  "Unit not found": {
+    "en": "Unit not found",
+    "ar": "الوحدة غير موجودة"
+  },
+  "user does not exist": {
+    "en": "user does not exist",
+    "ar": "المستخدم غير موجود"
+  },
+  "Cannot be cancelled": {
+    "en": "Cannot be cancelled",
+    "ar": "لا يمكن إلغاؤه"
+  },
+  "Cannot be Used": {
+    "en": "Cannot be Used",
+    "ar": "لا يمكن استخدامه"
+  },
+  "Pass not found": {
+    "en": "Pass not found",
+    "ar": "البطاقة غير موجودة"
+  },
+  "Visitor does not exist": {
+    "en": "Visitor does not exist",
+    "ar": "الزائر غير موجود"
+  },
+  "Not found": {
+    "en": "Not found",
+    "ar": "غير موجود"
+  },
+  "You are not allowed to perform this operation": {
+    "en": "You are not allowed to perform this operation",
+    "ar": "غير مسموح لك بالقيام بهذا الإجراء"
+  },
+
+  "Image not found": {
+    "en": "Image not found",
+    "ar": "الصورة غير موجودة"
+  },
+  "Invalid credentials": {
+    "en": "Invalid credentials",
+    "ar": "عذراً تأكد من صحة البيانات ثم أعد المحاولة"
+  },
+  "User is not verified": {
+    "en": "User is not verified",
+    "ar": "المستخدم غير موثق"
+  },
+  "User is suspended": {
+    "en": "User is suspended",
+    "ar": "المستخدم موقوف"
+  },
+  "User already exists": {
+    "en": "User already exists",
+    "ar": "المستخدم موجود بالفعل"
+  },
+  "User already verified": {
+    "en": "User already verified",
+    "ar": "المستخدم موثق بالفعل"
+  },
+  "Invalid OTP": {
+    "en": "Invalid OTP",
+    "ar": "رمز التحقق غير صالح"
+  },
+  "User does not exist": {
+    "en": "User does not exist",
+    "ar": "المستخدم غير موجود"
+  },
+  "User not found": {
+    "en": "User not found",
+    "ar": "المستخدم غير موجود"
+  },
+  "You can't reset password": {
+    "en": "You can't reset password",
+    "ar": "لا يمكنك إعادة تعيين كلمة المرور"
+  },
+  "Password not updated": {
+    "en": "Password not updated",
+    "ar": "لم يتم تحديث كلمة المرور"
+  },
+  "Account has been deleted": {
+    "en": "Account has been deleted",
+    "ar": "تم حذف الحساب"
+  },
+  "OTP already sent": {
+    "en": "OTP already sent",
+    "ar": "تم إرسال رمز التحقق مسبقًا"
+  },
+
+  "Facility with the same title already exists": {
+    "en": "Facility with the same title already exists",
+    "ar": "المرفق بنفس العنوان موجود بالفعل"
+  },
+  "Plan with the same title already exists": {
+    "en": "Plan with the same title already exists",
+    "ar": "الخطة بنفس العنوان موجودة بالفعل"
+  },
+  "Day is not available for booking": {
+    "en": "Day is not available for booking",
+    "ar": "اليوم غير متاح للحجز"
+  },
+
+  "You are not authorized to view this car": {
+    "en": "You are not authorized to view this car",
+    "ar": "غير مصرح لك بعرض هذه السيارة"
+  },
+  "Client not found": {
+    "en": "Client not found",
+    "ar": "العميل غير موجود"
+  },
+  "You cannot suspend super admin": {
+    "en": "You cannot suspend super admin",
+    "ar": "لا يمكنك تعليق المسؤول الرئيسي"
+  },
+  "Client is already deleted": {
+    "en": "Client is already deleted",
+    "ar": "تم حذف العميل بالفعل"
+  },
+  "Client is already suspended": {
+    "en": "Client is already suspended",
+    "ar": "تم تعليق العميل بالفعل"
+  },
+  "Client is already Active": {
+    "en": "Client is already Active",
+    "ar": "العميل نشط بالفعل"
+  },
+  "Please add tenant": {
+    "en": "Please add tenant",
+    "ar": "يرجى إضافة المستأجر"
+  },
+  "Facility already cancelled": {
+    "en": "Facility already cancelled",
+    "ar": "تم إلغاء المرفق بالفعل"
+  },
+  "You have already booked maximum allowed slots for this facility": {
+    "en": "You have already booked maximum allowed slots for this facility",
+    "ar": "لقد حجزت بالفعل الحد الأقصى المسموح به من الفتحات لهذا المرفق"
+  },
+  "Week calender from time should be equal or less than to time": {
+    "en": "Week calender from time should be equal or less than to time",
+    "ar": "يجب أن يكون وقت التقويم الأسبوعي من الوقت مساويًا أو أقل من الوقت"
+  },
+  "Facility already deleted": {
+    "en": "Facility already deleted",
+    "ar": "تم حذف المرفق بالفعل"
+  },
+  "Closing period from time should not be less than now": {
+    "en": "Closing period from time should not be less than now",
+    "ar": "يجب ألا يكون وقت الإغلاق من الوقت أقل من الآن"
+  },
+  "Closing period from time should be less than to time": {
+    "en": "Closing period from time should be less than to time",
+    "ar": "يجب أن يكون وقت الإغلاق من الوقت أقل من الوقت"
+  },
+  "Facility with same title already exist": {
+    "en": "Facility with same title already exist",
+    "ar": "المرفق بنفس العنوان موجود بالفعل"
+  },
+  "Time overlap": {
+    "en": "Time overlap",
+    "ar": "تداخل الوقت"
+  },
+  "Time period is not compatible with Facility time for booking": {
+    "en": "Time period is not compatible with Facility time for booking",
+    "ar": "فترة الوقت غير متوافقة مع وقت المرفق للحجز"
+  },
+
+  "Staff user must activate account first": {
+    "en": "Staff user must activate account first",
+    "ar": "يجب على مستخدم الموظف تنشيط الحساب أولاً"
+  },
+  "Staff user not found": {
+    "en": "Staff user not found",
+    "ar": "مستخدم الموظف غير موجود"
+  },
+  "You are not authorized to perform this action": {
+    "en": "You are not authorized to perform this action",
+    "ar": "غير مصرح لك بتنفيذ هذا الإجراء"
+  },
+  "Staff user is already suspended": {
+    "en": "Staff user is already suspended",
+    "ar": "تم تعليق مستخدم الموظف بالفعل"
+  },
+  "Staff user is already deleted": {
+    "en": "Staff user is already deleted",
+    "ar": "تم حذف مستخدم الموظف بالفعل"
+  },
+  "Staff user is already Active": {
+    "en": "Staff user is already Active",
+    "ar": "مستخدم الموظف نشط بالفعل"
+  },
+  "Tenant not found": {
+    "en": "Tenant not found",
+    "ar": "المستأجر غير موجود"
+  },
+  "Tenant already active": {
+    "en": "Tenant already active",
+    "ar": "المستأجر نشط بالفعل"
+  },
+  "Tenant already deleted": {
+    "en": "Tenant already deleted",
+    "ar": "تم حذف المستأجر بالفعل"
+  },
+  "Tenant must activate account first": {
+    "en": "Tenant must activate account first",
+    "ar": "يجب على المستأجر تنشيط الحساب أولاً"
+  },
+  "Venue not found": {
+    "en": "Venue not found",
+    "ar": "المجمع السكني غير موجود"
+  },
+  "Visitor not found": {
+    "en": "Visitor not found",
+    "ar": "الزائر غير موجود"
+  },
+  "Visitor already deleted": {
+    "en": "Visitor already deleted",
+    "ar": "تم حذف الزائر بالفعل"
+  },
+  "Something went wrong":
+  {
+    "en": "Something went wrong",
+    "ar": "حدث خطأ ما"
+  },
+  "Validation Failed":
+  {
+    "en": "Please check your data",
+    "ar": "الرجاء التأكد من أن البيانات صحيحة"
+  },
+  "Please check your data":
+    {
+      "en": "Please check your data",
+      "ar": "الرجاء التأكد من أن البيانات صحيحة"
+    },
+    "internal server error":
+    {
+      "en": "internal server error",
+      "ar":   "خطأ في الخادم الراجاء المحاولة لاحقاً"
+    },
+    "Success":
+    {
+      "en": "Success",
+      "ar": "تمت العملية بنجاح"
+    }
+}
