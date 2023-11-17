@@ -3,9 +3,9 @@ const publicationController = require("../../controller/System/publicationContro
 const router = express.Router();
 
 router.post("/create", publicationController.create);
-// router.put("/update", systemAuthController.update);
-// router.delete("/delete", systemAuthController.delete);
-// router.post("/get", systemAuthController.get);
-// router.get("/getone", systemAuthController.getone);
+router.put("/update/:id", publicationController.update);
+router.delete("/delete/:id", publicationController.deleteRecord);
+router.post("/get", publicationController.get);
+router.get("/get/:id", publicationController.getone);
 
 module.exports = router;

@@ -9,7 +9,7 @@ const supabase = connectDb();
 
 const login = async ({ email, password }) => {
   try {
-    const user = await supabase.from("user").select("*");
+    const user = await supabase.from("user").select("*").where();
     if (user) {
       //   const isMatch = await bcrypt.compare(password, user.password);
       //   if (!isMatch) throw ApiError.badRequest("Invalid credentials");

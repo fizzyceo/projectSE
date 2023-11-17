@@ -8,24 +8,24 @@ const connectDb = require("../../database/connectDb.js");
 const supabase = connectDb();
 
 const create = async (body) => {
-  const { text, photo, file, likes, etat, iduser } = body;
+  const { text, image, file, vocal, datemsg, idconv } = body;
   try {
-    const user = await supabase.from("publication").insert({
+    const message = await supabase.from("message").insert({
       text: text,
-      photo: photo,
+      image: image,
       file: file,
-      etat: etat,
-      likes: likes,
-      iduser: iduser,
+      datemsg: datemsg,
+      vocal: vocal,
+      idconv: idconv,
     });
-    if (user) {
+    if (message) {
       return {
         result: true,
-        message: "insert publication successful",
-        data: user,
+        message: "insert message successful",
+        data: message,
       };
     } else {
-      throw ApiError.badRequest("insert publication failed");
+      throw ApiError.badRequest("insert message failed");
     }
   } catch (error) {
     nextError(error);
@@ -33,15 +33,15 @@ const create = async (body) => {
 };
 const deleteRecord = async (id) => {
   try {
-    const user = await supabase.from("publication").delete().eq("idpub", id);
-    if (user) {
+    const message = await supabase.from("message").delete().eq("idmsg", id);
+    if (message) {
       return {
         result: true,
-        message: "deleteRecord publication successful",
-        data: user,
+        message: "deleteRecord message successful",
+        data: message,
       };
     } else {
-      throw ApiError.badRequest("deleteRecord publication failed");
+      throw ApiError.badRequest("deleteRecord message failed");
     }
   } catch (error) {
     nextError(error);
@@ -49,22 +49,22 @@ const deleteRecord = async (id) => {
 };
 const update = async (body, id) => {
   try {
-    let query = supabase.from("publication").update(body).eq("idpub", id);
+    let query = supabase.from("message").update(body).eq("idmsg", id);
 
     const data = await query;
     return {
       result: true,
-      message: "update publication successful",
+      message: "update message successful",
       data: data,
     };
   } catch (error) {
-    throw ApiError.badRequest("update publication failed");
+    throw ApiError.badRequest("update message failed");
     // nextError(error);
   }
 };
 const get = async (body) => {
   try {
-    let query = supabase.from("publication").select("*");
+    let query = supabase.from("message").select("*");
 
     // Iterate through the keys in the request body
     Object.keys(body).forEach((key) => {
@@ -77,25 +77,25 @@ const get = async (body) => {
     const data = await query;
     return {
       result: true,
-      message: "insert publication successful",
+      message: "insert message successful",
       data: data,
     };
   } catch (error) {
-    throw ApiError.badRequest("insert publication failed");
+    throw ApiError.badRequest("insert message failed");
     // nextError(error);
   }
 };
 const getone = async (id) => {
   try {
-    const data = await supabase.from("publication").select("*").eq("idpub", id);
+    const data = await supabase.from("message").select("*").eq("idmsg", id);
 
     return {
       result: true,
-      message: "getone publication successful",
+      message: "getone message successful",
       data: data,
     };
   } catch (error) {
-    throw ApiError.badRequest("getone publication failed");
+    throw ApiError.badRequest("getone message failed");
     // nextError(error);
   }
 };
