@@ -6,7 +6,7 @@ const _ = require("lodash");
 const { getUniqueId } = require("../../helpers/getUniqueId");
 const connectDb = require("../../database/connectDb.js");
 const supabase = connectDb();
-
+/*
 const create = async (body) => {
   const { iduser1 , iduser2 } = body;
   try {
@@ -26,7 +26,43 @@ const create = async (body) => {
   } catch (error) {
     nextError(error);
   }
-};
+};*/
+const create = async (body) => {
+    const { iduser1, iduser2 } = body;
+  
+    // Données à crypter
+    const dataToEncrypt = { iduser1, iduser2 };
+  
+    // Convertir les données en chaîne JSON
+    const jsonData = JSON.stringify(dataToEncrypt);
+  
+    // Créer un objet de chiffrement AES
+    const cipher = crypto.createCipher('aes-256-cbc', secretKey);
+  
+    // Crypter les données
+    let encryptedData = cipher.update(jsonData, 'utf-8', 'hex');
+    encryptedData += cipher.final('hex');
+  
+    try {
+      // Insérer les données cryptées dans Supabase
+      const conv = await supabase.from("Friend").insert({
+        encrypted_data: encryptedData,
+      });
+  
+      if (conv) {
+        return {
+          result: true,
+          message: "Insertion d'ami réussie",
+          data: conv,
+        };
+      } else {
+        throw ApiError.badRequest("Échec de l'insertion d'ami");
+      }
+    } catch (error) {
+      nextError(error);
+    }
+  };
+  
 const deleteRecord = async (id) => {
   try {
     const conv = await supabase.from("Friend").delete().eq("idFriend", id);
