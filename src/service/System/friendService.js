@@ -42,8 +42,11 @@ const create = async (body) => {
     // Générer un vecteur d'initialisation (IV)
     const iv = crypto.randomBytes(16);
   
+    // Définir votre clé secrète (assurez-vous qu'elle est correctement définie)
+    const secretKey = 'votre_cle_secrete'; // Remplacez par votre clé secrète
+  
     // Créer un objet de chiffrement AES
-    const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(secretKey), iv);
+    const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(secretKey, 'hex'), iv);
   
     // Crypter les données
     let encryptedData = cipher.update(jsonData, 'utf-8', 'hex');
@@ -53,7 +56,7 @@ const create = async (body) => {
       // Insérer les données cryptées dans Supabase
       const conv = await supabase.from("Friend").insert({
         encrypted_data: encryptedData,
-        iv: iv.toString('hex'), // stocker l'IV pour la déchiffrement ultérieur
+        iv: iv.toString('hex'), // stocker l'IV pour le déchiffrement ultérieur
       });
   
       if (conv) {
@@ -69,6 +72,7 @@ const create = async (body) => {
       nextError(error);
     }
   };
+  
 const deleteRecord = async (id) => {
   try {
     const conv = await supabase.from("Friend").delete().eq("idFriend", id);
