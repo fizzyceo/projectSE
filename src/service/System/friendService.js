@@ -6,6 +6,7 @@ const _ = require("lodash");
 const { getUniqueId } = require("../../helpers/getUniqueId");
 const connectDb = require("../../database/connectDb.js");
 const supabase = connectDb();
+const secretKey = 'myDatabase@1';
 /*
 const create = async (body) => {
   const { iduser1 , iduser2 } = body;
