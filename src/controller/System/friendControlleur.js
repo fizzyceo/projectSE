@@ -8,12 +8,12 @@ const create = tryCatchWrapper(async (req, res, next) => {
   const result = await freindService.create(body);
   return res.status(200).json(formatSuccessResponse(result, req));
 });
-const update = tryCatchWrapper(async (req, res, next) => {
+/*const update = tryCatchWrapper(async (req, res, next) => {
   const id = req.params.id;
   const body = req.body;
   const result = await freindService.update(body, id);
   return res.status(200).json(formatSuccessResponse(result, req));
-});
+});*/
 const get = tryCatchWrapper(async (req, res, next) => {
   const body = req.body;
   const result = await freindService.get(body);
