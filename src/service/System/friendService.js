@@ -3,13 +3,13 @@ const ApiError = require("../../error/api-error.js");
 const MailService = require("../sendMailService/sendMail");
 const nextError = require("../../helpers/errorTypeFunction");
 const _ = require("lodash");
-const crypto = require('crypto');
+//const crypto = require('crypto');
 const { getUniqueId } = require("../../helpers/getUniqueId");
 const connectDb = require("../../database/connectDb.js");
 const supabase = connectDb();
-const secretKey = 'myDatabase@1';
+//const secretKey = 'myDatabase@1';
 
-/*
+
 const create = async (body) => {
   const { iduser1 , iduser2 } = body;
   try {
@@ -29,7 +29,8 @@ const create = async (body) => {
   } catch (error) {
     nextError(error);
   }
-};*/
+};
+/*
 const create = async (body) => {
     const { iduser1, iduser2 } = body;
   
@@ -72,7 +73,7 @@ const create = async (body) => {
       nextError(error);
     }
   };
-  
+  */
 const deleteRecord = async (id) => {
   try {
     const conv = await supabase.from("Friend").delete().eq("idFriend", id);
