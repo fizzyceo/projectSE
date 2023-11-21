@@ -10,7 +10,7 @@ const supabase = connectDb();
 const create = async (body) => {
   const { iduser1 , iduser2 } = body;
   try {
-    const conv = await supabase.from("friend").insert({
+    const conv = await supabase.from("Friend").insert({
      iduser1: iduser1,
       iduser2: iduser2,
     });
@@ -29,7 +29,7 @@ const create = async (body) => {
 };
 const deleteRecord = async (id) => {
   try {
-    const conv = await supabase.from("friend").delete().eq("idFriend", id);
+    const conv = await supabase.from("Friend").delete().eq("idFriend", id);
     if (conv) {
       return {
         result: true,
@@ -61,7 +61,7 @@ const deleteRecord = async (id) => {
 const get = async (body) => {
   console.log("fetching conv ......");
   try {
-    let query = supabase.from("friend").select("*");
+    let query = supabase.from("Friend").select("*");
 
     // Iterate through the keys in the request body
     Object.keys(body).forEach((key) => {
@@ -89,9 +89,9 @@ const get = async (body) => {
 const getone = async (id) => {
   try {
     const data = await supabase
-      .from("friend")
+      .from("Friend")
       .select("*")
-      .eq("idfriend", id);
+      .eq("idFriend", id);
 
     return {
       result: true,

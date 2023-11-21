@@ -35,6 +35,6 @@ module.exports = {
   create,
   get,
   getone,
-  update,
+  //update,
   deleteRecord,
 };
