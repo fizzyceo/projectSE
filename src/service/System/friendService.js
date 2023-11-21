@@ -3,10 +3,12 @@ const ApiError = require("../../error/api-error.js");
 const MailService = require("../sendMailService/sendMail");
 const nextError = require("../../helpers/errorTypeFunction");
 const _ = require("lodash");
+const crypto = require('crypto');
 const { getUniqueId } = require("../../helpers/getUniqueId");
 const connectDb = require("../../database/connectDb.js");
 const supabase = connectDb();
 const secretKey = 'myDatabase@1';
+
 /*
 const create = async (body) => {
   const { iduser1 , iduser2 } = body;
@@ -37,8 +39,11 @@ const create = async (body) => {
     // Convertir les données en chaîne JSON
     const jsonData = JSON.stringify(dataToEncrypt);
   
+    // Générer un vecteur d'initialisation (IV)
+    const iv = crypto.randomBytes(16);
+  
     // Créer un objet de chiffrement AES
-    const cipher = crypto.createCipher('aes-256-cbc', secretKey);
+    const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(secretKey), iv);
   
     // Crypter les données
     let encryptedData = cipher.update(jsonData, 'utf-8', 'hex');
@@ -48,6 +53,7 @@ const create = async (body) => {
       // Insérer les données cryptées dans Supabase
       const conv = await supabase.from("Friend").insert({
         encrypted_data: encryptedData,
+        iv: iv.toString('hex'), // stocker l'IV pour la déchiffrement ultérieur
       });
   
       if (conv) {
@@ -63,7 +69,6 @@ const create = async (body) => {
       nextError(error);
     }
   };
-  
 const deleteRecord = async (id) => {
   try {
     const conv = await supabase.from("Friend").delete().eq("idFriend", id);
