@@ -7,7 +7,51 @@ const { getUniqueId } = require("../../helpers/getUniqueId");
 const connectDb = require("../../database/connectDb.js");
 const supabase = connectDb();
 
+
+
+const bcrypt = require('bcrypt');
+const saltRounds = 10; // Le coût du hachage, vous pouvez ajuster selon vos besoins
+
 const create = async (body) => {
+  const { nom, prenom, username, password, dateN, active } = body;
+
+  try {
+    // Générez un sel
+    const salt = await bcrypt.genSalt(saltRounds);
+    // Hachez le mot de passe avec le sel
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    const user = await supabase.from("user").insert({
+      nom: nom,
+      prenom: prenom,
+      username: username,
+      password: hashedPassword, // Utilisez le mot de passe haché
+      dateN: dateN,
+      active: active,
+    });
+
+    if (user) {
+      return {
+        result: true,
+        message: "Insertion d'utilisateur réussie",
+        data: user,
+      };
+    } else {
+      throw ApiError.badRequest("Échec de l'insertion de l'utilisateur");
+    }
+  } catch (error) {
+    nextError(error);
+  }
+};
+
+
+
+
+
+
+/*
+
+const create2 = async (body) => {
   const {  nom, prenom,  username,  password,  dateN, active } = body;
   try {
     const user = await supabase.from("user").insert({
@@ -46,7 +90,7 @@ const deleteRecord = async (id) => {
   } catch (error) {
     nextError(error);
   }
-};
+};*/
 const update = async (body, id) => {
   try {
     let query = supabase.from("user").update(body).eq("idu", id);
