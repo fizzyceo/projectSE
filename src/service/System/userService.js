@@ -74,7 +74,7 @@ const create2 = async (body) => {
   } catch (error) {
     nextError(error);
   }
-};
+};*/
 const deleteRecord = async (id) => {
   try {
     const user = await supabase.from("user").delete().eq("idu", id);
@@ -90,7 +90,7 @@ const deleteRecord = async (id) => {
   } catch (error) {
     nextError(error);
   }
-};*/
+};
 const update = async (body, id) => {
   try {
     let query = supabase.from("user").update(body).eq("idu", id);
