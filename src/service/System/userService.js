@@ -1,4 +1,4 @@
-const bcrypt = require("bcryptjs");
+const bcrypt = require('bcrypt');
 const ApiError = require("../../error/api-error.js");
 const MailService = require("../sendMailService/sendMail");
 const nextError = require("../../helpers/errorTypeFunction");
@@ -9,7 +9,7 @@ const supabase = connectDb();
 
 
 
-const bcrypt = require('bcrypt');
+
 const saltRounds = 10; // Le coût du hachage, vous pouvez ajuster selon vos besoins
 
 const create = async (body) => {
