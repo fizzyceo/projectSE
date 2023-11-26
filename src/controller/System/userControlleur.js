@@ -32,10 +32,33 @@ const deleteRecord = tryCatchWrapper(async (req, res, next) => {
   const result = await userService.deleteRecord(id);
   return res.status(200).json(formatSuccessResponse(result, req));
 });
+
+
+
+const login = tryCatchWrapper(async (req, res, next) => {
+  const { email, password } = req.body;
+
+// Appelez le service pour gérer l'opération de connexion
+  const result = await userService.login(email, password);
+
+  if (result.result) {
+    // Si la connexion réussit, générez un jeton d'accès
+    const token = generateAccessToken(result.data); // Assurez-vous que generateAccessToken est correctement défini
+    return res.status(200).json({ success: true, message: "Login successful", token });
+  } 
+else {
+    // Si la connexion échoue, renvoyez une réponse d'erreur
+    return res.status(401).json(formatErrorResponse(result.message, req));
+  }
+});
+
+
+
 module.exports = {
   create,
   get,
   getone,
   update,
   deleteRecord,
+  login
 };
