@@ -146,6 +146,20 @@ const getone = async (id) => {
 
 
 const login = async (body) => {
+
+  try {
+    if (!body || !body.username) {
+      return {
+        result: false,
+        message: "Invalid request. Username is missing.",
+      };
+    }
+
+    // Reste du code de la fonction de login...
+  } catch (error) {
+    console.error("Error:", error);
+    throw ApiError.badRequest("Login failed");
+  }
   try {
     // Récupération de l'utilisateur depuis Supabase en utilisant l'e-mail comme filtre
     const { data: users, error } = await supabase
