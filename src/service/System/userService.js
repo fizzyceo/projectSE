@@ -148,14 +148,15 @@ const getone = async (id) => {
 const login = async (body) => {
 
   try {
-    if (!body || !body.username) {
+    if (!body || !body.username || !body.password) {
       return {
         result: false,
-        message: "Invalid request. Username is missing.",
+        message: "Invalid request. Username or password is missing.",
       };
     }
 
     // Reste du code de la fonction de login...
+    // ...
   } catch (error) {
     console.error("Error:", error);
     throw ApiError.badRequest("Login failed");
