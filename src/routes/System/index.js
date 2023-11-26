@@ -3,7 +3,7 @@ const conversation = require("./conversation");
 const message = require("./message");
 const user= require("./user");
 const friend= require("./friend");
-
+const groupe= require("./groupe");
 
 
 const express = require("express");
@@ -15,6 +15,6 @@ router.use("/message", message);
 router.use("/conversation", conversation);
 router.use("/user", user);
 router.use("/friend", friend);
-
+router.use("/groupe", groupe);
 
 module.exports = router;
