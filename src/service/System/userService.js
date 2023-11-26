@@ -146,7 +146,6 @@ const getone = async (id) => {
 
 
 const login = async (body) => {
-
   try {
     if (!body || !body.username || !body.password) {
       return {
@@ -161,6 +160,7 @@ const login = async (body) => {
     console.error("Error:", error);
     throw ApiError.badRequest("Login failed");
   }
+
   try {
     // Récupération de l'utilisateur depuis Supabase en utilisant l'e-mail comme filtre
     const { data: users, error } = await supabase
@@ -201,6 +201,11 @@ const login = async (body) => {
       result: true,
       message: "Login successful",
       token: token,
+      user: { // Exemple de validation pour éviter les références circulaires
+        idu: user.idu,
+        username: user.username,
+        // Ajoutez d'autres propriétés utilisateur si nécessaire
+      },
     };
   } catch (error) {
     console.error("Error:", error);
