@@ -146,9 +146,10 @@ const getone = async (id) => {
 
 const login = async (body) => {
   if (!body || !body.username || !body.password) {
+    console.error("Invalid request. Username or password is missing.");
     throw ApiError.badRequest("Invalid request. Username or password is missing.");
   }
-
+  
   try {
     const { data: users, error } = await supabase
       .from("user")
