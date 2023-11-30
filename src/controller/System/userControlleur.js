@@ -33,37 +33,67 @@ const deleteRecord = tryCatchWrapper(async (req, res, next) => {
   const result = await userService.deleteRecord(id);
   return res.status(200).json(formatSuccessResponse(result, req));
 });
-
-const login = tryCatchWrapper(async (req, res, next) => {
+const login = async (body) => {
   try {
-    const { username, password } = req.body;
-
-    if (!username || !password) {
-      throw ApiError.badRequest("Invalid request. Username or password is missing.");
+    if (!body || !body.username || !body.password) {
+      return {
+        result: false,
+        message: "Invalid request. Username or password is missing.",
+      };
     }
 
-    console.log('Request body:', req.body);
+    const { data: users, error } = await supabase
+      .from("user")
+      .select("*")
+      .eq("username", body.username);
 
-    const result = await userService.login({ username, password });
-
-    if (result.result) {
-      const token = generateAccessToken(result.data);
-      return res.status(200).json({ success: true, message: "Login successful", token });
-    } else {
-      const errorResponse = formatErrorResponse(result.message, {
-        method: req.method,
-        url: req.url,
-        headers: req.headers,
-        // Ajoutez d'autres informations pertinentes si nécessaire
-      });
-
-      return res.status(401).json(errorResponse);
+    if (error) {
+      throw error;
     }
+
+    if (users.length === 0) {
+      return {
+        result: false,
+        message: "Invalid credentials",
+      };
+    }
+
+    const user = users[0];
+
+    // Assurez-vous que body.password n'est pas vide
+    if (!body.password) {
+      return {
+        result: false,
+        message: "Invalid request. Password is missing.",
+      };
+    }
+
+    const passwordMatch = await bcrypt.compare(body.password, user.hashedPassword);
+
+    if (!passwordMatch) {
+      return {
+        result: false,
+        message: "Invalid credentials",
+      };
+    }
+
+    const token = jwt.sign({ userId: user.idu, username: user.username }, "yourSecretKey", { expiresIn: "1h" });
+
+    return {
+      result: true,
+      message: "Login successful",
+      token: token,
+      user: {
+        idu: user.idu,
+        username: user.username,
+      },
+    };
   } catch (error) {
     console.error("Error:", error);
-    return res.status(500).json({ success: false, message: "Internal Server Error" });
+    throw ApiError.badRequest("Login failed");
   }
-});
+};
+
 
 
 
