@@ -144,18 +144,9 @@ const getone = async (id) => {
   }
 };
 
-
 const login = async (body) => {
-  try {
-    if (!body || !body.username || !body.password) {
-      return {
-        result: false,
-        message: "Invalid request. Username or password is missing.",
-      };
-    }
-  } catch (error) {
-    console.error("Error:", error);
-    throw ApiError.badRequest("Login failed");
+  if (!body || !body.username || !body.password) {
+    throw ApiError.badRequest("Invalid request. Username or password is missing.");
   }
 
   try {
@@ -169,10 +160,7 @@ const login = async (body) => {
     }
 
     if (users.length === 0) {
-      return {
-        result: false,
-        message: "Invalid credentials",
-      };
+      throw ApiError.badRequest("Invalid credentials");
     }
 
     const user = users[0]; 
@@ -180,13 +168,9 @@ const login = async (body) => {
 
     if (!passwordMatch) {
       // Mot de passe incorrect
-      return {
-        result: false,
-        message: "Invalid credentials",
-      };
+      throw ApiError.badRequest("Invalid credentials");
     }
 
-   
     const token = jwt.sign({ userId: user.idu, username: user.username }, "yourSecretKey", { expiresIn: "1h" });
 
     // Réponse avec le token
@@ -194,10 +178,9 @@ const login = async (body) => {
       result: true,
       message: "Login successful",
       token: token,
-      user: { // Exemple de validation pour éviter les références circulaires
+      user: {
         idu: user.idu,
         username: user.username,
-        // Ajoutez d'autres propriétés utilisateur si nécessaire
       },
     };
   } catch (error) {
