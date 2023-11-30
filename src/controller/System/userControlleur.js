@@ -1,7 +1,8 @@
 const userService = require("../../service/System/userService");
 const { formatSuccessResponse, formatErrorResponse } = require("../../helpers/formatResponse");
 const { generateAccessToken } = require("../../helpers/jwt");
-const tryCatchWrapper = require("../../helpers/tryCatchWrapper");
+const nextError = require("../../helpers/tryCatchWrapper").nextError;
+const  tryCatchWrapper = require("../../helpers/tryCatchWrapper");
 const _ = require("lodash");
 //const { formatSuccessResponse } = require("../../helpers/formatResponse");
 
