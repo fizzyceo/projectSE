@@ -33,9 +33,14 @@ const deleteRecord = tryCatchWrapper(async (req, res, next) => {
   const result = await userService.deleteRecord(id);
   return res.status(200).json(formatSuccessResponse(result, req));
 });
+
+
 const login = async (body) => {
   try {
+    console.log("Login function called with body:", body);
+
     if (!body || !body.username || !body.password) {
+      console.error("Invalid request. Username or password is missing.");
       return {
         result: false,
         message: "Invalid request. Username or password is missing.",
@@ -48,10 +53,12 @@ const login = async (body) => {
       .eq("username", body.username);
 
     if (error) {
+      console.error("Supabase error:", error);
       throw error;
     }
 
     if (users.length === 0) {
+      console.error("Invalid credentials. User not found.");
       return {
         result: false,
         message: "Invalid credentials",
@@ -62,6 +69,7 @@ const login = async (body) => {
 
     // Assurez-vous que body.password n'est pas vide
     if (!body.password) {
+      console.error("Invalid request. Password is missing.");
       return {
         result: false,
         message: "Invalid request. Password is missing.",
@@ -71,6 +79,7 @@ const login = async (body) => {
     const passwordMatch = await bcrypt.compare(body.password, user.hashedPassword);
 
     if (!passwordMatch) {
+      console.error("Invalid credentials. Password does not match.");
       return {
         result: false,
         message: "Invalid credentials",
@@ -79,6 +88,7 @@ const login = async (body) => {
 
     const token = jwt.sign({ userId: user.idu, username: user.username }, "yourSecretKey", { expiresIn: "1h" });
 
+    console.log("Login successful. Returning token and user data.");
     return {
       result: true,
       message: "Login successful",
@@ -89,12 +99,10 @@ const login = async (body) => {
       },
     };
   } catch (error) {
-    console.error("Error:", error);
+    console.error("Error in login function:", error);
     throw ApiError.badRequest("Login failed");
   }
 };
-
-
 
 
 module.exports = {
