@@ -35,8 +35,8 @@ const deleteRecord = tryCatchWrapper(async (req, res, next) => {
 });
 
 
-
 const login = tryCatchWrapper(async (req, res, next) => {
+  console.log('Request body:', req.body); // Ajoutez cette ligne
   const { username, password } = req.body;
 
   const result = await userService.login(username, password);
@@ -44,20 +44,18 @@ const login = tryCatchWrapper(async (req, res, next) => {
   if (result.result) {  
     const token = generateAccessToken(result.data); 
     return res.status(200).json({ success: true, message: "Login successful", token });
-  } 
-else {
- 
-  const errorResponse = formatErrorResponse(result.message, {
-    method: req.method,
-    url: req.url,
-    headers: req.headers,
-    // Ajoutez d'autres informations pertinentes si nécessaire
-  });
-  
-  return res.status(401).json(errorResponse);
-  
+  } else {
+    const errorResponse = formatErrorResponse(result.message, {
+      method: req.method,
+      url: req.url,
+      headers: req.headers,
+      // Ajoutez d'autres informations pertinentes si nécessaire
+    });
+
+    return res.status(401).json(errorResponse);
   }
 });
+
 
 
 
