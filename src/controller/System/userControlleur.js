@@ -37,7 +37,9 @@ const deleteRecord = tryCatchWrapper(async (req, res, next) => {
 
 const login = tryCatchWrapper(async (req, res, next) => {
   console.log('Request body:', req.body); // Ajoutez cette ligne
-  const { username, password } = req.body;
+  const username = 'test';
+const password = 'test';
+
 
   const result = await userService.login(username, password);
 
