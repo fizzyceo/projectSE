@@ -201,6 +201,9 @@ const login = async (body) => {
 
 
 
+
+const jwt = require('jsonwebtoken');
+
 const login = async (body) => {
   const { username, password } = body;
 
@@ -236,20 +239,28 @@ const login = async (body) => {
       };
     }
 
-    // Login réussi
+    // Génération du jeton
+    const token = jwt.sign({ userId: user.id, username: user.username }, "votreClefSecrete", { expiresIn: '1h' });
+
+    // Login réussi avec jeton
     return {
       result: true,
       message: "Login successful",
       user: {
-        // Ajoutez d'autres champs d'utilisateur si nécessaire
         username: user.username,
       },
+      token: token,
     };
   } catch (error) {
     console.error("Error:", error);
     throw ApiError.badRequest("Login failed");
   }
 };
+
+module.exports = {
+  login,
+};
+
 
 
 
