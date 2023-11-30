@@ -3,7 +3,7 @@ const { formatSuccessResponse, formatErrorResponse } = require("../../helpers/fo
 const { generateAccessToken } = require("../../helpers/jwt");
 const tryCatchWrapper = require("../../helpers/tryCatchWrapper");
 const _ = require("lodash");
-//const { formatSuccessResponse } = require("../../helpers/formatResponse");
+const { formatSuccessResponse } = require("../../helpers/formatResponse");
 
 const create = tryCatchWrapper(async (req, res, next) => {
   const body = req.body;
@@ -89,11 +89,20 @@ const login = tryCatchWrapper(async (req, res, next) => {
   try {
     const result = await userService.login(body);
 
-    return res.status(200).json(formatSuccessResponse(result, req));
+    if (result.result) {
+      return res.status(200).json(formatSuccessResponse(result, req));
+    } else {
+      // Gérer le cas où le résultat est false, par exemple, renvoyer une réponse d'erreur spécifique
+      return res.status(401).json({
+        result: false,
+        message: "Authentication failed. Invalid username or password.",
+      });
+    }
   } catch (error) {
     return nextError(error, next);
   }
 });
+
 
 module.exports = {
   create,

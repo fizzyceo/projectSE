@@ -166,6 +166,12 @@ const login = async (body) => {
     const user = users[0];
     const passwordMatch = await bcrypt.compare(body.password, user.hashedPassword);
 
+if (!passwordMatch) {
+  // Mot de passe incorrect
+  throw ApiError.badRequest("Invalid credentials");
+}
+
+
     if (!passwordMatch) {
       // Mot de passe incorrect
       throw ApiError.badRequest("Invalid credentials");
