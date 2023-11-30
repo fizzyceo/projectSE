@@ -46,9 +46,15 @@ const login = tryCatchWrapper(async (req, res, next) => {
     return res.status(200).json({ success: true, message: "Login successful", token });
   } 
 else {
-  console.log('result.message:', result.message);
-  console.log('req:', req);
-  return res.status(401).json(formatErrorResponse(result.message, req));
+ 
+  const errorResponse = formatErrorResponse(result.message, {
+    method: req.method,
+    url: req.url,
+    headers: req.headers,
+    // Ajoutez d'autres informations pertinentes si nécessaire
+  });
+  
+  return res.status(401).json(errorResponse);
   
   }
 });
