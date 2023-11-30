@@ -144,55 +144,56 @@ const getone = async (id) => {
   }
 };
 const login = async (body) => {
-  if (!body || !body.username || !body.password) {
-    console.error("Invalid request. Username or password is missing.");
-    throw ApiError.badRequest("Invalid request. Username or password is missing.");
-  }
+  const { username, password } = body;
 
   try {
+    // Recherche de l'utilisateur dans la base de données
     const { data: users, error } = await supabase
       .from("user")
       .select("*")
-      .eq("username", body.username);
+      .eq("username", username);
 
     if (error) {
       throw error;
     }
 
     if (users.length === 0) {
-      throw ApiError.badRequest("Invalid credentials");
+      // Aucun utilisateur trouvé avec le nom d'utilisateur donné
+      return {
+        result: false,
+        message: "Invalid credentials",
+      };
     }
 
     const user = users[0];
-    const passwordMatch = await bcrypt.compare(body.password, user.hashedPassword);
 
-if (!passwordMatch) {
-  // Mot de passe incorrect
-  throw ApiError.badRequest("Invalid credentials");
-}
-
-
-    if (!passwordMatch) {
+    // Vérification du mot de passe
+    if (user.password !== password) {
       // Mot de passe incorrect
-      throw ApiError.badRequest("Invalid credentials");
+      return {
+        result: false,
+        message: "Invalid credentials",
+      };
     }
 
-    const token = jwt.sign({ userId: user.idu, username: user.username }, "yourSecretKey", { expiresIn: "1h" });
-
-    // Réponse avec le token
+    // Login réussi
     return {
       result: true,
       message: "Login successful",
-      token: token,
       user: {
-        idu: user.idu,
+       // idu: user.id,
         username: user.username,
+        // Ajoutez d'autres champs d'utilisateur si nécessaire
       },
     };
   } catch (error) {
     console.error("Error:", error);
     throw ApiError.badRequest("Login failed");
   }
+};
+
+module.exports = {
+  login,
 };
 
 module.exports = {

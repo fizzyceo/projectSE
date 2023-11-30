@@ -89,59 +89,11 @@ const login = async (body) => {
 };*/
 // userService.js
 
-const login = async (body) => {
-  if (!body || !body.username || !body.password) {
-    console.error("Invalid request. Username or password is missing.");
-    throw ApiError.badRequest("Invalid request. Username or password is missing.");
-  }
-
-  try {
-    const { data: users, error } = await supabase
-      .from("user")
-      .select("*")
-      .eq("username", body.username);
-
-    if (error) {
-      throw error;
-    }
-
-    if (users.length === 0) {
-      throw ApiError.badRequest("Invalid credentials");
-    }
-
-    const user = users[0];
-
-    // Vérifiez si la propriété hashedPassword existe dans l'objet user
-    if (!user.hashedPassword) {
-      throw ApiError.badRequest("Invalid user data. Hashed password not found.");
-    }
-
-    const passwordMatch = await bcrypt.compare(body.password, user.hashedPassword);
-
-    if (!passwordMatch) {
-      throw ApiError.badRequest("Invalid credentials");
-    }
-
-    const token = jwt.sign({ userId: user.idu, username: user.username }, "yourSecretKey", { expiresIn: "1h" });
-
-    return {
-      result: true,
-      message: "Login successful",
-      token: token,
-      user: {
-        idu: user.idu,
-        username: user.username,
-      },
-    };
-  } catch (error) {
-    console.error("Error:", error);
-    throw ApiError.badRequest("Login failed");
-  }
-};
-
-module.exports = {
-  login,
-};
+const login = tryCatchWrapper(async (req, res, next) => {
+  const body = req.body;
+  const result = await userService.login(body);
+  return res.status(200).json(formatSuccessResponse(result, req));
+});
 
 
 module.exports = {
