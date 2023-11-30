@@ -1,7 +1,7 @@
 const userService = require("../../service/System/userService");
 const { formatSuccessResponse, formatErrorResponse } = require("../../helpers/formatResponse");
 const { generateAccessToken } = require("../../helpers/jwt");
-const nextError = require("../../helpers/tryCatchWrapper").nextError;
+const nextError = require("../../helpers/tryCatchWrapper")
 const tryCatchWrapper = require("../../helpers/tryCatchWrapper");
 //const userService = require('../service/System/userService'); // Assurez-vous d'ajuster le chemin selon la structure de votre projet
 //const { formatSuccessResponse } = require('../../chemin-vers-vos-fonctions-utilitaires'); // Assurez-vous d'ajuster le chemin selon la structure de votre projet
@@ -87,25 +87,61 @@ const login = async (body) => {
     throw ApiError.badRequest("Login failed");
   }
 };*/
-const login = tryCatchWrapper(async (req, res, next) => {
-  const body = req.body;
+// userService.js
+
+const login = async (body) => {
+  if (!body || !body.username || !body.password) {
+    console.error("Invalid request. Username or password is missing.");
+    throw ApiError.badRequest("Invalid request. Username or password is missing.");
+  }
 
   try {
-    const result = await userService.login(body);
+    const { data: users, error } = await supabase
+      .from("user")
+      .select("*")
+      .eq("username", body.username);
 
-    if (result.result) {
-      return res.status(200).json(formatSuccessResponse(result, req));
-    } else {
-      // Gérer le cas où le résultat est false, par exemple, renvoyer une réponse d'erreur spécifique
-      return res.status(401).json({
-        result: false,
-        message: "Authentication failed. Invalid username or password.",
-      });
+    if (error) {
+      throw error;
     }
+
+    if (users.length === 0) {
+      throw ApiError.badRequest("Invalid credentials");
+    }
+
+    const user = users[0];
+
+    // Vérifiez si la propriété hashedPassword existe dans l'objet user
+    if (!user.hashedPassword) {
+      throw ApiError.badRequest("Invalid user data. Hashed password not found.");
+    }
+
+    const passwordMatch = await bcrypt.compare(body.password, user.hashedPassword);
+
+    if (!passwordMatch) {
+      throw ApiError.badRequest("Invalid credentials");
+    }
+
+    const token = jwt.sign({ userId: user.idu, username: user.username }, "yourSecretKey", { expiresIn: "1h" });
+
+    return {
+      result: true,
+      message: "Login successful",
+      token: token,
+      user: {
+        idu: user.idu,
+        username: user.username,
+      },
+    };
   } catch (error) {
-    return nextError(error, next);
+    console.error("Error:", error);
+    throw ApiError.badRequest("Login failed");
   }
-});
+};
+
+module.exports = {
+  login,
+};
 
 
 module.exports = {
