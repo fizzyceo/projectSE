@@ -33,7 +33,7 @@ const deleteRecord = tryCatchWrapper(async (req, res, next) => {
   const result = await userService.deleteRecord(id);
   return res.status(200).json(formatSuccessResponse(result, req));
 });
-
+/*
 const login = async (body) => {
   try {
     console.log("Login function called with body:", body);
@@ -82,7 +82,18 @@ const login = async (body) => {
     console.error("Error in login function:", error);
     throw ApiError.badRequest("Login failed");
   }
-};
+};*/
+const login = tryCatchWrapper(async (req, res, next) => {
+  const body = req.body;
+
+  try {
+    const result = await userService.login(body);
+
+    return res.status(200).json(formatSuccessResponse(result, req));
+  } catch (error) {
+    return nextError(error, next);
+  }
+});
 
 module.exports = {
   create,

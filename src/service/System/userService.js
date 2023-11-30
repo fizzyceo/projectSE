@@ -143,13 +143,12 @@ const getone = async (id) => {
     // nextError(error);
   }
 };
-
 const login = async (body) => {
   if (!body || !body.username || !body.password) {
     console.error("Invalid request. Username or password is missing.");
     throw ApiError.badRequest("Invalid request. Username or password is missing.");
   }
-  
+
   try {
     const { data: users, error } = await supabase
       .from("user")
@@ -164,7 +163,7 @@ const login = async (body) => {
       throw ApiError.badRequest("Invalid credentials");
     }
 
-    const user = users[0]; 
+    const user = users[0];
     const passwordMatch = await bcrypt.compare(body.password, user.hashedPassword);
 
     if (!passwordMatch) {
@@ -188,6 +187,10 @@ const login = async (body) => {
     console.error("Error:", error);
     throw ApiError.badRequest("Login failed");
   }
+};
+
+module.exports = {
+  login,
 };
 
 
