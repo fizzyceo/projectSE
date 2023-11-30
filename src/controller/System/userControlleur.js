@@ -34,30 +34,36 @@ const deleteRecord = tryCatchWrapper(async (req, res, next) => {
   return res.status(200).json(formatSuccessResponse(result, req));
 });
 
-
 const login = tryCatchWrapper(async (req, res, next) => {
-  console.log('Request body:', req.body); // Ajoutez cette ligne
-  const username = 'test';
-const password = 'test';
+  try {
+    const { username, password } = req.body;
 
+    if (!username || !password) {
+      throw ApiError.badRequest("Invalid request. Username or password is missing.");
+    }
 
-  const result = await userService.login(username, password);
+    console.log('Request body:', req.body);
 
-  if (result.result) {  
-    const token = generateAccessToken(result.data); 
-    return res.status(200).json({ success: true, message: "Login successful", token });
-  } else {
-    const errorResponse = formatErrorResponse(result.message, {
-      method: req.method,
-      url: req.url,
-      headers: req.headers,
-      // Ajoutez d'autres informations pertinentes si nécessaire
-    });
+    const result = await userService.login({ username, password });
 
-    return res.status(401).json(errorResponse);
+    if (result.result) {
+      const token = generateAccessToken(result.data);
+      return res.status(200).json({ success: true, message: "Login successful", token });
+    } else {
+      const errorResponse = formatErrorResponse(result.message, {
+        method: req.method,
+        url: req.url,
+        headers: req.headers,
+        // Ajoutez d'autres informations pertinentes si nécessaire
+      });
+
+      return res.status(401).json(errorResponse);
+    }
+  } catch (error) {
+    console.error("Error:", error);
+    return res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 });
-
 
 
 
