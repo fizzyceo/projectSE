@@ -192,14 +192,6 @@ const login = async (body) => {
   }
 };
 
-module.exports = {
-  login,
-};
-
-module.exports = {
-  login,
-};
-
 
 
 
