@@ -34,7 +34,6 @@ const deleteRecord = tryCatchWrapper(async (req, res, next) => {
   return res.status(200).json(formatSuccessResponse(result, req));
 });
 
-
 const login = async (body) => {
   try {
     console.log("Login function called with body:", body);
@@ -67,25 +66,6 @@ const login = async (body) => {
 
     const user = users[0];
 
-    // Assurez-vous que body.password n'est pas vide
-    if (!body.password) {
-      console.error("Invalid request. Password is missing.");
-      return {
-        result: false,
-        message: "Invalid request. Password is missing.",
-      };
-    }
-
-    const passwordMatch = await bcrypt.compare(body.password, user.hashedPassword);
-
-    if (!passwordMatch) {
-      console.error("Invalid credentials. Password does not match.");
-      return {
-        result: false,
-        message: "Invalid credentials",
-      };
-    }
-
     const token = jwt.sign({ userId: user.idu, username: user.username }, "yourSecretKey", { expiresIn: "1h" });
 
     console.log("Login successful. Returning token and user data.");
@@ -103,7 +83,6 @@ const login = async (body) => {
     throw ApiError.badRequest("Login failed");
   }
 };
-
 
 module.exports = {
   create,
