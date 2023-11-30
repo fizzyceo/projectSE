@@ -153,16 +153,12 @@ const login = async (body) => {
         message: "Invalid request. Username or password is missing.",
       };
     }
-
-    // Reste du code de la fonction de login...
-    // ...
   } catch (error) {
     console.error("Error:", error);
     throw ApiError.badRequest("Login failed");
   }
 
   try {
-    // Récupération de l'utilisateur depuis Supabase en utilisant l'e-mail comme filtre
     const { data: users, error } = await supabase
       .from("user")
       .select("*")
@@ -172,7 +168,6 @@ const login = async (body) => {
       throw error;
     }
 
-    // Vérification si l'utilisateur existe
     if (users.length === 0) {
       return {
         result: false,
@@ -180,9 +175,7 @@ const login = async (body) => {
       };
     }
 
-    const user = users[0]; // En supposant qu'il n'y a qu'un seul utilisateur avec cet e-mail
-
-    // Vérification du mot de passe avec bcrypt
+    const user = users[0]; 
     const passwordMatch = await bcrypt.compare(body.password, user.hashedPassword);
 
     if (!passwordMatch) {
@@ -193,7 +186,7 @@ const login = async (body) => {
       };
     }
 
-    // Si le mot de passe est correct, générer un jeton avec jsonwebtoken
+   
     const token = jwt.sign({ userId: user.idu, username: user.username }, "yourSecretKey", { expiresIn: "1h" });
 
     // Réponse avec le token
