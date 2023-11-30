@@ -5,6 +5,7 @@ const nextError = require("../../helpers/errorTypeFunction");
 const _ = require("lodash");
 const { getUniqueId } = require("../../helpers/getUniqueId");
 const connectDb = require("../../database/connectDb.js");
+
 const supabase = connectDb();
 
 
@@ -143,6 +144,9 @@ const getone = async (id) => {
     // nextError(error);
   }
 };
+
+
+/*
 const login = async (body) => {
   const { username, password } = body;
 
@@ -184,6 +188,61 @@ const login = async (body) => {
        // idu: user.id,
         username: user.username,
         // Ajoutez d'autres champs d'utilisateur si nécessaire
+      },
+    };
+  } catch (error) {
+    console.error("Error:", error);
+    throw ApiError.badRequest("Login failed");
+  }
+};
+
+*/
+
+
+
+
+const login = async (body) => {
+  const { username, password } = body;
+
+  try {
+    // Recherche de l'utilisateur dans la base de données
+    const { data: users, error } = await supabase
+      .from("user")
+      .select("*")
+      .eq("username", username);
+
+    if (error) {
+      throw error;
+    }
+
+    if (users.length === 0) {
+      // Aucun utilisateur trouvé avec le nom d'utilisateur donné
+      return {
+        result: false,
+        message: "Invalid credentials",
+      };
+    }
+
+    const user = users[0];
+
+    // Vérification du mot de passe avec bcrypt
+    const passwordMatch = await bcrypt.compare(password, user.password);
+
+    if (!passwordMatch) {
+      // Mot de passe incorrect
+      return {
+        result: false,
+        message: "Invalid credentials",
+      };
+    }
+
+    // Login réussi
+    return {
+      result: true,
+      message: "Login successful",
+      user: {
+        // Ajoutez d'autres champs d'utilisateur si nécessaire
+        username: user.username,
       },
     };
   } catch (error) {
