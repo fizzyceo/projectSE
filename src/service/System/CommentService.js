@@ -11,7 +11,7 @@ const supabase = connectDb();
 
 
 const create = async (body) => {
-  const {  idComment, textes } = body;
+  const {  iduser, textes  , idpub} = body;
   try {
     const conv = await supabase.from("Comment").insert({
      iduser: iduser,
