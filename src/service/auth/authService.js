@@ -7,9 +7,14 @@ const { getUniqueId } = require("../../helpers/getUniqueId");
 const connectDb = require("../../database/connectDb.js");
 const supabase = connectDb();
 
-const login = async ({ email, password }) => {
+const login = async ({ username, password }) => {
   try {
-    const user = await supabase.from("user").select("*").where();
+    const user = await supabase
+      .from("user")
+      .select("*")
+      .eq("password", password)
+      .eq("username", username);
+    console.log(username, password, user);
     if (user) {
       //   const isMatch = await bcrypt.compare(password, user.password);
       //   if (!isMatch) throw ApiError.badRequest("Invalid credentials");
@@ -22,13 +27,12 @@ const login = async ({ email, password }) => {
       //   message: "Login successful",
       //   data: _.omit(userData, ["password", "otp", "updatedAt", "__v", "_id"]),
       // };
+      console.log(user);
       return {
-        result: true,
-        message: "Login successful",
         data: user,
       };
     } else {
-      const body = { email: email, password: password };
+      const body = { username: username, password: password };
       throw ApiError.badRequest("User does not exist");
     }
   } catch (error) {

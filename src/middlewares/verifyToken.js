@@ -14,7 +14,6 @@ function verifyToken(req, res, next) {
       function (err, decoded) {
         if (err) throw ApiError.unAuthorized("unauthorized");
         req.user = decoded;
-        console.log("USERRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR");
       }
     );
 

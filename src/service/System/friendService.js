@@ -9,12 +9,11 @@ const connectDb = require("../../database/connectDb.js");
 const supabase = connectDb();
 //const secretKey = 'myDatabase@1';
 
-
 const create = async (body) => {
-  const { iduser1 , iduser2 } = body;
+  const { iduser1, iduser2 } = body;
   try {
     const conv = await supabase.from("Friend").insert({
-     iduser1: iduser1,
+      iduser1: iduser1,
       iduser2: iduser2,
     });
     if (conv) {
@@ -105,40 +104,38 @@ const deleteRecord = async (id) => {
     // nextError(error);
   }
 };*/
-const get = async (body) => {
+const get = async (currentUser) => {
   console.log("fetching conv ......");
   try {
-    let query = supabase.from("Friend").select("*");
+    const { data, error } = await supabase
+      .from("Friend")
+      .select("*")
+      .or(
+        `iduser1.eq.${parseInt(currentUser)} , iduser2.eq.${parseInt(
+          currentUser
+        )}`
+      );
 
-    // Iterate through the keys in the request body
-    Object.keys(body).forEach((key) => {
-      // Check if the key exists and is not empty
-      if (body[key]) {
-        // Add a filter condition for each key-value pair in the request body
-        query = query.eq(key, body[key]);
-      }
-    });
-    console.log("fetching ......");
+    if (error) {
+      console.error(error);
+      throw new Error("Failed to fetch friends");
+    }
 
-    const data = await query;
     console.log("finished ......", data);
 
     return {
       result: true,
-      message: "insert friend successful",
+      message: "Fetch friends successful",
       data: data,
     };
   } catch (error) {
-    throw ApiError.badRequest("insert friend failed");
-    // nextError(error);
+    throw new Error("Failed to fetch friends");
   }
 };
+
 const getone = async (id) => {
   try {
-    const data = await supabase
-      .from("Friend")
-      .select("*")
-      .eq("idFriend", id);
+    const data = await supabase.from("Friend").select("*").eq("idFriend", id);
 
     return {
       result: true,

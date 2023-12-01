@@ -6,7 +6,11 @@ const { formatSuccessResponse } = require("../../helpers/formatResponse");
 
 const create = tryCatchWrapper(async (req, res, next) => {
   const body = req.body;
-  const result = await messageService.create(body);
+  console.log(body);
+  console.log(req.user);
+  const userId = req.user?.data[0]?.idu || req.user?.data?.idu;
+
+  const result = await messageService.create(userId, body);
   return res.status(200).json(formatSuccessResponse(result, req));
 });
 const update = tryCatchWrapper(async (req, res, next) => {

@@ -7,14 +7,53 @@ const { getUniqueId } = require("../../helpers/getUniqueId");
 const connectDb = require("../../database/connectDb.js");
 const supabase = connectDb();
 
-const create = async (body) => {
-  const { nom, photo } = body;
+const create = async (userId, body) => {
+  const { nom, photo, photoname } = body; //req.user.id is the admin
+  //
+
   try {
-    const conv = await supabase.from("conversation").insert({
-      nom: nom,
-      photo: photo,
-    });
+    const { data: res, error: uploadError } = await supabase.storage
+      .from("photo")
+      .upload(`${photoname}`, photo);
+
+    if (uploadError) {
+      console.log(uploadError);
+      return;
+    }
+    console.log(res);
+
+    const fileUrl = `https://aibrwsnxbuklshdpwvzv.supabase.co/storage/v1/object/public/photo/${photoname}`;
+
+    const conv = await supabase
+      .from("conversation")
+      .insert([
+        {
+          nom: nom,
+          photo: fileUrl,
+          admin: userId,
+        },
+      ])
+      .select();
+
+    if (conv.error) {
+      console.log(conv.error);
+      return;
+    }
+
+    console.log("image inserted successfully:", conv.data);
+
+    console.log(conv.data[0].idconv);
     if (conv) {
+      //we insert the user who created this convo to the groupe
+      //create a groupe row
+      const joinAdmin = await supabase
+        .from("groupe")
+        .insert({
+          idu: userId,
+          idconv: conv.data[0].idconv,
+        })
+        .select();
+      console.log(joinAdmin);
       return {
         result: true,
         message: "insert conversation successful",

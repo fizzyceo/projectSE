@@ -5,20 +5,29 @@ const nextError = require("../../helpers/errorTypeFunction");
 const _ = require("lodash");
 const { getUniqueId } = require("../../helpers/getUniqueId");
 const connectDb = require("../../database/connectDb.js");
+const moment = require("moment");
 const supabase = connectDb();
-
-const create = async (body) => {
-  const { text, image, file, vocal, datemsg, idconv } = body;
+//we want to fetch all messages that belong to a specific chat/convo
+//we want to
+const create = async (userId, body) => {
+  const { text, idconv } = body;
   try {
-    const message = await supabase.from("message").insert({
-      text: text,
-      image: image,
-      file: file,
-      datemsg: datemsg,
-      vocal: vocal,
-      idconv: idconv,
-    });
+    const datemsg = moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
+    const message = await supabase
+      .from("message")
+      .insert({
+        text: text,
+
+        datemsg: datemsg,
+        idconv: idconv,
+        sender: userId,
+      })
+      .select();
+
     if (message) {
+      io.emit("new_message", { text, idconv, sender: userId, datemsg });
+
+      //emit socket message
       return {
         result: true,
         message: "insert message successful",

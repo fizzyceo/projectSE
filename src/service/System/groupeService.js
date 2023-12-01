@@ -8,12 +8,16 @@ const connectDb = require("../../database/connectDb.js");
 const supabase = connectDb();
 
 const create = async (body) => {
-  const { idu , idconv } = body;
+  //to indicate that this user belongs to this convo/groupe
+  const { idu, idconv } = body;
   try {
-    const conv = await supabase.from("groupe").insert({
-        idu: idu ,
-      idconv: idconv,
-    });
+    const conv = await supabase
+      .from("groupe")
+      .insert({
+        idu: idu,
+        idconv: idconv,
+      })
+      .select();
     if (conv) {
       return {
         result: true,
@@ -64,7 +68,6 @@ const get = async (body) => {
     let query = supabase.from("groupe").select("*");
 
     Object.keys(body).forEach((key) => {
-   
       if (body[key]) {
         query = query.eq(key, body[key]);
       }
@@ -86,10 +89,7 @@ const get = async (body) => {
 };
 const getone = async (id) => {
   try {
-    const data = await supabase
-      .from("groupe")
-      .select("*")
-      .eq("idgroupe", id);
+    const data = await supabase.from("groupe").select("*").eq("idgroupe", id);
 
     return {
       result: true,

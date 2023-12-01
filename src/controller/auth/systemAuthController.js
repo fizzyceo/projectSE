@@ -5,9 +5,10 @@ const _ = require("lodash");
 const { formatSuccessResponse } = require("../../helpers/formatResponse");
 
 const login = tryCatchWrapper(async (req, res, next) => {
-  const { email, password } = req.body;
-  const result = await systemAuthService.login({ email, password });
-  result.accessToken = generateAccessToken(result.data); //add additional infos
+  const { username, password } = req.body;
+  const result = await systemAuthService.login({ username, password });
+
+  result.accessToken = generateAccessToken(_.omit(result.data, "password")); //add additional infos
   return res.status(200).json(formatSuccessResponse(result, req));
 });
 

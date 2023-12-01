@@ -16,7 +16,8 @@ const create = tryCatchWrapper(async (req, res, next) => {
 });*/
 const get = tryCatchWrapper(async (req, res, next) => {
   const body = req.body;
-  const result = await freindService.get(body);
+  console.log(body);
+  const result = await freindService.get(body.currentUser);
   return res.status(200).json(formatSuccessResponse(result, req));
 });
 const getone = tryCatchWrapper(async (req, res, next) => {
