@@ -5,6 +5,7 @@ const nextError = require("../../helpers/errorTypeFunction");
 const _ = require("lodash");
 const { getUniqueId } = require("../../helpers/getUniqueId");
 const connectDb = require("../../database/connectDb.js");
+
 const supabase = connectDb();
 
 
@@ -145,45 +146,90 @@ const getone = async (id) => {
 };
 
 
+/*
 const login = async (body) => {
-  try {
-    if (!body || !body.username || !body.password) {
-      return {
-        result: false,
-        message: "Invalid request. Username or password is missing.",
-      };
-    }
-
-    // Reste du code de la fonction de login...
-    // ...
-  } catch (error) {
-    console.error("Error:", error);
-    throw ApiError.badRequest("Login failed");
-  }
+  const { username, password } = body;
 
   try {
-    // Récupération de l'utilisateur depuis Supabase en utilisant l'e-mail comme filtre
+    // Recherche de l'utilisateur dans la base de données
     const { data: users, error } = await supabase
       .from("user")
       .select("*")
-      .eq("username", body.username);
+      .eq("username", username);
 
     if (error) {
       throw error;
     }
 
-    // Vérification si l'utilisateur existe
     if (users.length === 0) {
+      // Aucun utilisateur trouvé avec le nom d'utilisateur donné
       return {
         result: false,
         message: "Invalid credentials",
       };
     }
 
-    const user = users[0]; // En supposant qu'il n'y a qu'un seul utilisateur avec cet e-mail
+    const user = users[0];
+
+    // Vérification du mot de passe
+    if (user.password !== password) {
+      // Mot de passe incorrect
+      return {
+        result: false,
+        message: "Invalid credentials",
+      };
+    }
+
+    // Login réussi
+    return {
+      result: true,
+      message: "Login successful",
+      user: {
+       // idu: user.id,
+        username: user.username,
+        // Ajoutez d'autres champs d'utilisateur si nécessaire
+      },
+    };
+  } catch (error) {
+    console.error("Error:", error);
+    throw ApiError.badRequest("Login failed");
+  }
+};
+
+*/
+
+
+
+
+
+const jwt = require('jsonwebtoken');
+
+const login = async (body) => {
+  const { username, password } = body;
+
+  try {
+    // Recherche de l'utilisateur dans la base de données
+    const { data: users, error } = await supabase
+      .from("user")
+      .select("*")
+      .eq("username", username);
+
+    if (error) {
+      throw error;
+    }
+
+    if (users.length === 0) {
+      // Aucun utilisateur trouvé avec le nom d'utilisateur donné
+      return {
+        result: false,
+        message: "Invalid credentials",
+      };
+    }
+
+    const user = users[0];
 
     // Vérification du mot de passe avec bcrypt
-    const passwordMatch = await bcrypt.compare(body.password, user.hashedPassword);
+    const passwordMatch = await bcrypt.compare(password, user.password);
 
     if (!passwordMatch) {
       // Mot de passe incorrect
@@ -193,25 +239,25 @@ const login = async (body) => {
       };
     }
 
-    // Si le mot de passe est correct, générer un jeton avec jsonwebtoken
-    const token = jwt.sign({ userId: user.idu, username: user.username }, "yourSecretKey", { expiresIn: "1h" });
+    // Génération du jeton
+    const token = jwt.sign({ userId: user.id, username: user.username }, "votreClefSecrete", { expiresIn: '1h' });
 
-    // Réponse avec le token
+    // Login réussi avec jeton
     return {
       result: true,
       message: "Login successful",
-      token: token,
-      user: { // Exemple de validation pour éviter les références circulaires
-        idu: user.idu,
+      user: {
         username: user.username,
-        // Ajoutez d'autres propriétés utilisateur si nécessaire
       },
+      token: token,
     };
   } catch (error) {
     console.error("Error:", error);
     throw ApiError.badRequest("Login failed");
   }
 };
+
+
 
 
 
