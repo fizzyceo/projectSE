@@ -14,8 +14,9 @@ const create = async (body) => {
   const {  idComment, textes } = body;
   try {
     const conv = await supabase.from("Comment").insert({
-     idComment: idComment,
+     iduser: iduser,
       textes: textes,
+      idpub:idpub
     });
     if (conv) {
       return {
